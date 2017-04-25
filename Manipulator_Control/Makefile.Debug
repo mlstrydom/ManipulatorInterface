@@ -231,7 +231,7 @@ debug\moc_qextserialport.cpp: C:\Qt\5.7\msvc2015_64\include\QtCore\QIODevice \
 		C:\Qt\5.7\msvc2015_64\include\QtCore\QtGlobal \
 		3rdparty\qextserialport\src\qextserialport.h \
 		C:\Qt\5.7\msvc2015_64\bin\moc.exe
-	C:\Qt\5.7\msvc2015_64\bin\moc.exe $(DEFINES) -D_MSC_VER=1900 -D_WIN32 -D_WIN64 -IC:/Qt/5.7/msvc2015_64/mkspecs/win32-msvc2015 -I"C:/Users/n9552651/OneDrive - CH3 PTY LTD/QUT OneDriveBus/Software/Windows Test Code" -I"C:/Users/n9552651/OneDrive - CH3 PTY LTD/QUT OneDriveBus/Software/Windows Test Code/3rdparty/qextserialport/src" -IC:/opencv/build/include -IC:/Qt/5.7/msvc2015_64/include -IC:/Qt/5.7/msvc2015_64/include/QtGui -IC:/Qt/5.7/msvc2015_64/include/QtANGLE -IC:/Qt/5.7/msvc2015_64/include/QtSerialPort -IC:/Qt/5.7/msvc2015_64/include/QtCore 3rdparty\qextserialport\src\qextserialport.h -o debug\moc_qextserialport.cpp
+	C:\Qt\5.7\msvc2015_64\bin\moc.exe $(DEFINES) -D_MSC_VER=1900 -D_WIN32 -D_WIN64 -IC:/Qt/5.7/msvc2015_64/mkspecs/win32-msvc2015 -IC:/Users/n9552651/Documents/GIT/Manipulator_Control -IC:/Users/n9552651/Documents/GIT/Manipulator_Control/3rdparty/qextserialport/src -IC:/opencv/build/include -IC:/Qt/5.7/msvc2015_64/include -IC:/Qt/5.7/msvc2015_64/include/QtGui -IC:/Qt/5.7/msvc2015_64/include/QtANGLE -IC:/Qt/5.7/msvc2015_64/include/QtSerialPort -IC:/Qt/5.7/msvc2015_64/include/QtCore 3rdparty\qextserialport\src\qextserialport.h -o debug\moc_qextserialport.cpp
 
 debug\moc_qextserialenumerator.cpp: C:\Qt\5.7\msvc2015_64\include\QtCore\QList \
 		C:\Qt\5.7\msvc2015_64\include\QtCore\qlist.h \
@@ -286,7 +286,7 @@ debug\moc_qextserialenumerator.cpp: C:\Qt\5.7\msvc2015_64\include\QtCore\QList \
 		C:\Qt\5.7\msvc2015_64\include\QtCore\QtGlobal \
 		3rdparty\qextserialport\src\qextserialenumerator.h \
 		C:\Qt\5.7\msvc2015_64\bin\moc.exe
-	C:\Qt\5.7\msvc2015_64\bin\moc.exe $(DEFINES) -D_MSC_VER=1900 -D_WIN32 -D_WIN64 -IC:/Qt/5.7/msvc2015_64/mkspecs/win32-msvc2015 -I"C:/Users/n9552651/OneDrive - CH3 PTY LTD/QUT OneDriveBus/Software/Windows Test Code" -I"C:/Users/n9552651/OneDrive - CH3 PTY LTD/QUT OneDriveBus/Software/Windows Test Code/3rdparty/qextserialport/src" -IC:/opencv/build/include -IC:/Qt/5.7/msvc2015_64/include -IC:/Qt/5.7/msvc2015_64/include/QtGui -IC:/Qt/5.7/msvc2015_64/include/QtANGLE -IC:/Qt/5.7/msvc2015_64/include/QtSerialPort -IC:/Qt/5.7/msvc2015_64/include/QtCore 3rdparty\qextserialport\src\qextserialenumerator.h -o debug\moc_qextserialenumerator.cpp
+	C:\Qt\5.7\msvc2015_64\bin\moc.exe $(DEFINES) -D_MSC_VER=1900 -D_WIN32 -D_WIN64 -IC:/Qt/5.7/msvc2015_64/mkspecs/win32-msvc2015 -IC:/Users/n9552651/Documents/GIT/Manipulator_Control -IC:/Users/n9552651/Documents/GIT/Manipulator_Control/3rdparty/qextserialport/src -IC:/opencv/build/include -IC:/Qt/5.7/msvc2015_64/include -IC:/Qt/5.7/msvc2015_64/include/QtGui -IC:/Qt/5.7/msvc2015_64/include/QtANGLE -IC:/Qt/5.7/msvc2015_64/include/QtSerialPort -IC:/Qt/5.7/msvc2015_64/include/QtCore 3rdparty\qextserialport\src\qextserialenumerator.h -o debug\moc_qextserialenumerator.cpp
 
 compiler_moc_source_make_all:
 compiler_moc_source_clean:

@@ -176,16 +176,16 @@ AutoInput::AutoInput()
 }
 
 void AutoInput::init()
-{    //Define s motor
+{    //Define f motor
     c.s.screwPitch = 20;
     c.s.screwLength = 600;
     c.s.motorDegPerStep = 1.8;
-    c.s.motorMicroStep = 800;
+    c.s.motorMicroStep = 4;
     //Define l motor
     c.l.screwPitch = 20;
     c.l.screwLength = 300;
     c.l.motorDegPerStep = 1.8;
-    c.l.motorMicroStep = 800;
+    c.l.motorMicroStep = 6;
 
 }
 
@@ -196,60 +196,56 @@ void AutoInput::run(SerialChannel serial, Motors motors)
     //Find the unique identifier cpos
     std::size_t found = data.find("cpos");
     long x_steps = 0, y_steps = 0 ,z_steps = 0;
-    double x = 0, y = 0, z = 0;
+    double xmm = 0, ymm = 0, zmm = 0;
     char a;
-    char cposIdentify[10];
+    char cposIdentify[100];
     if (found!=std::string::npos){ //no 'cpos' substring in data
         sscanf(data.c_str(),"%c %s %ld %ld %c",&a, &cposIdentify, &z_steps, &y_steps,&a);
-        std::cout <<  data << std::endl;
-        std::cout << "z_steps = " << z_steps << std::endl;
-        std::cout << "y_steps = " << y_steps << std::endl;
+        std::cout << "data from Arduino =:" <<data << std::endl;
+        std::cout << "Arduino z_steps = " << z_steps << std::endl;
+        std::cout << "Arduino y_steps = " << y_steps << std::endl;
+        std::cout << "---" << std::endl;
+
     }
-    Characteristics c;
-    c.s.screwPitch = 20;
-    c.s.motorDegPerStep = 1.8;
-    c.s.motorMicroStep = 4;
-
-    c.l.screwPitch = 20;
-    c.l.motorDegPerStep = 1.8;
-    c.l.motorMicroStep = 6;
-
     //TODO: fix rotation in dh so x=x, y=y, z=z. currently z=x, y=y, z=x.
-    z = c.stepsToMillimeters(x_steps,
+    zmm = c.stepsToMillimeters(x_steps,  //Used z for flex (not x)
                          c.l.screwPitch,
                          c.l.motorDegPerStep,
                          c.l.motorMicroStep);
 
-    y = c.stepsToMillimeters(y_steps,
+    ymm = c.stepsToMillimeters(y_steps,
                          c.l.screwPitch,
                          c.l.motorDegPerStep,
                          c.l.motorMicroStep);
 
-    x = c.stepsToMillimeters(z_steps,
+    xmm = c.stepsToMillimeters(z_steps,
                          c.s.screwPitch,
                          c.s.motorDegPerStep,
                          c.s.motorMicroStep);
 
-    std::cout << "x from arduino = " << x << std::endl;
-    std::cout << "y from arduino = " << y << std::endl;
-    std::cout << "z from arduino = " << z << std::endl;
+    std::cout << "x distance in mm moved by motor = " << xmm << std::endl;
+    std::cout << "y distance in mm moved by motor = " << ymm << std::endl;
+    std::cout << "z distance in mm moved by motor = " << zmm << std::endl;
+    std::cout << "---------------------------------------------" << std::endl;
 
 
-    kinematics.ikin.updateCurrentState(x, y, z);
+    kinematics.ikin.updateCurrentState(xmm, ymm, zmm);
     static kin::state s = {0,0,0,0,0,0};
-    std::cout << "sx = " << s.x << std::endl;
-    std::cout << "x = " << x << std::endl;
-    std::cout << "ex = " << (std::pow(s.x,2)-std::pow(x,2)) << std::endl;
-    std::cout << "sy = " << s.x << std::endl;
-    std::cout << "y = " << x << std::endl;
-    std::cout << "ey = " << (std::pow(s.x,2)-std::pow(x,2)) << std::endl;
-    std::cout << "sz = " << s.x << std::endl;
-    std::cout << "z = " << x << std::endl;
-    std::cout << "ez = " << (std::pow(s.x,2)-std::pow(x,2)) << std::endl;
-    if(
-            (std::pow(s.x,2)-std::pow(x,2))<=1e-5
-            && (std::pow(s.y,2)-std::pow(y,2))<=1e-5
-            && (std::pow(s.z,2)-std::pow(z,2))<=1e-5
+    std::cout << "sx from matrix = " << s.x << std::endl;
+    std::cout << "x distance moved by motor = " << xmm << std::endl;
+    std::cout << "x given steps - x motor steps squared (ex) = " << (std::pow(s.x,2)-std::pow(xmm,2)) << std::endl;
+    std::cout << "sy = from matrix " << s.y << std::endl;
+    std::cout << "y = distance moved by motor " << ymm << std::endl;
+    std::cout << "y given steps - y motor steps squared (ey)" << (std::pow(s.y,2)-std::pow(ymm,2)) << std::endl;
+    std::cout << "sz = from matrix " << s.z << std::endl;
+    std::cout << "z = distance moved by motor " << zmm << std::endl;
+    std::cout << "z given steps - z motor steps squared (ez)" << (std::pow(s.z,2)-std::pow(zmm,2)) << std::endl;
+    std::cout << "---" << std::endl;
+
+    if(  //check how if given and reached position is the same
+            (std::pow(s.x,2)-std::pow(xmm,2))<=1e-5
+            && (std::pow(s.y,2)-std::pow(ymm,2))<=1e-5
+            && (std::pow(s.z,2)-std::pow(zmm,2))<=1e-5
        ){
     s = kinematics.process();
     long s_auto_steps = c.millimetersToSteps(s.x,
@@ -262,18 +258,18 @@ void AutoInput::run(SerialChannel serial, Motors motors)
                          c.l.motorDegPerStep,
                          c.l.motorMicroStep);
 
-    std::cout << "--->s to arduino = " << s_auto_steps << std::endl;
-    std::cout << "--->l to arduino = " << l_auto_steps << std::endl;
+    std::cout << "--->Flex steps to arduino = " << s_auto_steps << std::endl;
+    std::cout << "--->Lift steps to arduino = " << l_auto_steps << std::endl;
 
     serial.tx(motors.commandFactory("f", s_auto_steps));
-    std::cout << "Response...";
+    std::cout << "Arduino Response...";
     std::string stdStringData = serial.rx();
-//    std::cout << "auto data = " << stdStringData << std::endl;
+    std::cout << "f auto data = " << stdStringData << std::endl;
 
     serial.tx(motors.commandFactory("l", l_auto_steps));
-    std::cout << "Response...";
+    std::cout << "Arduino Response...";
     std::string stdStringData1 = serial.rx();
-//    std::cout << "auto data = " << stdStringData1 << std::endl;
+    std::cout << "L auto data = " << stdStringData1 << std::endl;
     }
 }
 //---------------Main Selection-----------------------------
@@ -296,21 +292,23 @@ void MainSelection::mainKeySelection(int &x, SerialChannel serial)
                       << "\t Use 'r' key for step summary" << std::endl
                       << "\t Use 'Enter' key to send steps to motors" << std::endl
                       << std::endl;
-                while(true){
-                    manualInput.run(serial,motors);
-                    if(!manualInput.stop_auto){
-     //                   autoInput.run(serial,motors);
-                }
-                    //Sleep(1000);
-               }
-                break;
+            while(true){
+                manualInput.run(serial,motors);
+                if(!manualInput.stop_auto){
+                    autoInput.run(serial,motors);
+            }
+           }
+        break;
         case 97: // a
             std::cout << "AUTO Mode" << std::endl;
-//            autoInput.run(serial, motors);
-            break;
+            while(true){
+                    autoInput.run(serial,motors);
+                    Sleep(1000);
+            }
+        break;
         default:
             printf("Unknown keyboard input in main menu: ascii = %d\n",(int) x);
-            break;
+        break;
     }
-    }
+ }
 

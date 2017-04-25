@@ -84,10 +84,10 @@ kin::state kin::ForwardKinematics::get(double angle)
             tf = tf * getAMatrix(d);
         }
     }
-    std::cout << "tf = "<< std::endl << " "  << tf << std::endl << std::endl;
-    std::cout << "x = " << tf.at<float>(0,3) << std::endl;
-    std::cout << "y = " << tf.at<float>(1,3) << std::endl;
-    std::cout << "z = " << tf.at<float>(2,3) << std::endl;
+    std::cout << "Transfer Functoin tf from matrix = "<< std::endl << " "  << tf << std::endl << std::endl;
+    std::cout << "s.x from matrix = " << tf.at<float>(0,3) << std::endl;
+    std::cout << "s.y from matrix = " << tf.at<float>(1,3) << std::endl;
+    std::cout << "s.z from matrix = " << tf.at<float>(2,3) << std::endl;
 
     kin::state s;
     s.x = tf.at<float>(0,3);
