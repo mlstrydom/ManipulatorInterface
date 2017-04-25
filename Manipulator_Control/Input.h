@@ -53,6 +53,30 @@ private:
     void sendCommandToChannel(SerialChannel serial, Motors motors, long &steps);
     void resetSteps();
 };
+class DemoMode : public Input
+{
+public:
+    DemoMode();
+    SerialChannel serial;
+    void run(SerialChannel serial, Motors motors);
+    bool stop_auto = false;
+    char demo;
+    char menu;
+
+private:
+    bool ready_to_move = false;
+    void upKey(long &demoSteps, std::string &demoMotor);
+    void commandSummary();
+    void resetLiftMove(long &steps, std::string &motor);
+    void resetFlexMove(long &steps, std::string &motor);
+    void upMove(long &steps, std::string &motor);
+    void downMove(long &steps, std::string &motor);
+    void flexMoveDown(long &steps, std::string &motor);
+    void flexMoveRight(long &steps, std::string &motor);
+    void sendCommandToChannel(SerialChannel demoSerial, Motors demoMotors, long &demoSteps);
+    void resetSteps();
+        int m;
+};
 class MainSelection
 {
 public:
@@ -62,8 +86,8 @@ public:
     void run(SerialChannel serial, Motors motors);
     ManualInput manualInput;
     AutoInput autoInput;
+    DemoMode demoMode;
     void mainKeySelection(int &x, SerialChannel serial);
-
-private:
 };
+
 #endif // MANUALINPUT_H

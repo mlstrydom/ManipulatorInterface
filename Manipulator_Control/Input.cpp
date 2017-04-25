@@ -1,5 +1,115 @@
 #include "Input.h"
 
+DemoMode::DemoMode()
+{
+
+}
+
+void DemoMode::run(SerialChannel serial, Motors motors)
+{
+    if(kbhit()){
+        stop_auto = true;
+        std::string motors;
+        long steps;
+        m = getch();
+        if(m==0 || m==-32)
+        {
+            ready_to_move = false;
+//            checkArrowKeys(motors, steps);
+        }else{
+ //           checkOtherKeys(motors, serial, steps, motors);
+        }
+    }
+}
+void DemoMode::resetLiftMove(long &steps, std::string &motor)
+{
+    std::cout << "Move leg up" << std::endl;
+    motor = "l";
+    steps = -19000;
+    l_steps = steps;
+    std::cout << "motor = " << motor <<
+                 " reset steps = " << l_steps <<
+                 std::endl;
+}
+void DemoMode::resetFlexMove(long &steps, std::string &motor)
+{
+    std::cout << "Move leg up" << std::endl;
+    motor = "f";
+    steps = -19000;
+    s_steps = steps;
+    std::cout << "motor = " << motor <<
+                 " reset steps = " << s_steps <<
+                 std::endl;
+}
+void DemoMode::upMove(long &steps, std::string &motor)
+{
+    std::cout << "Move leg up" << std::endl;
+    motor = "l";
+    steps = 15000;
+    l_steps = steps;
+    std::cout << "motor = " << motor <<
+                 " steps = " << l_steps <<
+                 std::endl;
+}
+void DemoMode::downMove(long &steps, std::string &motor)
+{
+    std::cout << "Move leg up" << std::endl;
+    motor = "l";
+    steps = 12000;
+    l_steps = steps;
+    std::cout << "motor = " << motor <<
+                 " steps = " << l_steps <<
+                 std::endl;
+}
+void DemoMode::flexMoveDown(long &steps, std::string &motor)
+{
+    std::cout << "Move leg up" << std::endl;
+    motor = "f";
+    steps = 15000;
+    s_steps = steps;
+    std::cout << "motor = " << motor <<
+                 " steps = " << s_steps <<
+                 std::endl;
+}
+void DemoMode::flexMoveRight(long &steps, std::string &motor)
+{
+    std::cout << "Move leg up" << std::endl;
+    motor = "f";
+    steps = 15000;
+    s_steps = steps;
+    std::cout << "motor = " << motor <<
+                 " steps = " << s_steps <<
+                 std::endl;
+}
+void DemoMode::resetSteps()
+{
+    l_steps = 0;
+    s_steps = 0;
+}
+
+void DemoMode::sendCommandToChannel(SerialChannel serial, Motors motors, long &steps)
+{
+
+    if(ready_to_move == true){
+        serial.tx(motors.commandFactory("f", s_steps));
+        std::cout << "Response...";
+        std::string stdStringData = serial.rx();
+        std::cout << "data = " << stdStringData << std::endl;
+
+        serial.tx(motors.commandFactory("l", l_steps));
+        std::cout << "Response...";
+        std::string stdStringData1 = serial.rx();
+        std::cout << "data = " << stdStringData1 << std::endl;
+
+        resetSteps();
+        std::cout << "Motor commands sent" << std::endl;
+    }else{
+        std::cout << "You must first review the commands with by typing 'r'" << std::endl;
+    }
+    ready_to_move = false;
+}
+
+
 ManualInput::ManualInput()
 {
 
@@ -233,13 +343,13 @@ void AutoInput::run(SerialChannel serial, Motors motors)
     static kin::state s = {0,0,0,0,0,0};
     std::cout << "sx from matrix = " << s.x << std::endl;
     std::cout << "x distance moved by motor = " << xmm << std::endl;
-    std::cout << "x given steps - x motor steps squared (ex) = " << (std::pow(s.x,2)-std::pow(xmm,2)) << std::endl;
+    std::cout << "x squared step error (ex) = " << (std::pow(s.x,2)-std::pow(xmm,2)) << std::endl;
     std::cout << "sy = from matrix " << s.y << std::endl;
     std::cout << "y = distance moved by motor " << ymm << std::endl;
-    std::cout << "y given steps - y motor steps squared (ey)" << (std::pow(s.y,2)-std::pow(ymm,2)) << std::endl;
+    std::cout << "y squared step error (ey)" << (std::pow(s.y,2)-std::pow(ymm,2)) << std::endl;
     std::cout << "sz = from matrix " << s.z << std::endl;
     std::cout << "z = distance moved by motor " << zmm << std::endl;
-    std::cout << "z given steps - z motor steps squared (ez)" << (std::pow(s.z,2)-std::pow(zmm,2)) << std::endl;
+    std::cout << "z squared step error (ez)" << (std::pow(s.z,2)-std::pow(zmm,2)) << std::endl;
     std::cout << "---" << std::endl;
 
     if(  //check how if given and reached position is the same
@@ -282,7 +392,10 @@ void MainSelection::mainKeySelection(int &x, SerialChannel serial)
     switch(x) {
         case 100: // d
             std::cout << "DEMO Mode" << std::endl;
-            exit(0);
+            while(true){
+                    demoMode.run(serial,motors);
+                    Sleep(1000);
+            }
         case 109: // m
             std::cout << "Manual Input Mode" << std::endl;
             std::cout << "Usage: " << std::endl
