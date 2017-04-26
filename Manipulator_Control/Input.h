@@ -42,7 +42,6 @@ public:
 
 private:
     bool ready_to_move = false;
-
     void upKey(long &steps, std::string &motor);
     void downKey(long &steps, std::string &motor);
     void rightKey(long &steps, std::string &motor);
@@ -53,29 +52,41 @@ private:
     void sendCommandToChannel(SerialChannel serial, Motors motors, long &steps);
     void resetSteps();
 };
-class DemoMode : public Input
+class DemoMode :public Input
 {
+
 public:
     DemoMode();
+    void init();
     SerialChannel serial;
     void run(SerialChannel serial, Motors motors);
     bool stop_auto = false;
     char demo;
-    char menu;
+    char m;
+    long xsteps = 10;
+    long ysteps = 550;
+    long zsteps = 23;
 
 private:
     bool ready_to_move = false;
-    void upKey(long &demoSteps, std::string &demoMotor);
-    void commandSummary();
+    void StartDemo(int &m, long &steps, std::string &motor, SerialChannel serial, Motors motors);
     void resetLiftMove(long &steps, std::string &motor);
     void resetFlexMove(long &steps, std::string &motor);
-    void upMove(long &steps, std::string &motor);
+    void motorPosition(SerialChannel serial, Motors motors);
+    void DemoMove(SerialChannel serial, Motors motors);
+    void resetSteps();
+    void sendCommandToChannel(SerialChannel serial, Motors motors);
+    void raiseLeg(SerialChannel serial, Motors motors);
+    void upMove(SerialChannel serial, Motors motors, long &steps, std::string &motor);
+
+/*
     void downMove(long &steps, std::string &motor);
     void flexMoveDown(long &steps, std::string &motor);
     void flexMoveRight(long &steps, std::string &motor);
-    void sendCommandToChannel(SerialChannel demoSerial, Motors demoMotors, long &demoSteps);
-    void resetSteps();
-        int m;
+
+    void flexLeg(long &flexsteps, Motors &motors, long &flexPostion, SerialChannel &serial);
+    void lowerFlexLeg(long &liftPosition, Motors &motors, long &flexPostion, long &flexsteps, long &liftsteps, SerialChannel &serial);
+*/
 };
 class MainSelection
 {

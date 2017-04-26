@@ -1,115 +1,5 @@
 #include "Input.h"
 
-DemoMode::DemoMode()
-{
-
-}
-
-void DemoMode::run(SerialChannel serial, Motors motors)
-{
-    if(kbhit()){
-        stop_auto = true;
-        std::string motors;
-        long steps;
-        m = getch();
-        if(m==0 || m==-32)
-        {
-            ready_to_move = false;
-//            checkArrowKeys(motors, steps);
-        }else{
- //           checkOtherKeys(motors, serial, steps, motors);
-        }
-    }
-}
-void DemoMode::resetLiftMove(long &steps, std::string &motor)
-{
-    std::cout << "Move leg up" << std::endl;
-    motor = "l";
-    steps = -19000;
-    l_steps = steps;
-    std::cout << "motor = " << motor <<
-                 " reset steps = " << l_steps <<
-                 std::endl;
-}
-void DemoMode::resetFlexMove(long &steps, std::string &motor)
-{
-    std::cout << "Move leg up" << std::endl;
-    motor = "f";
-    steps = -19000;
-    s_steps = steps;
-    std::cout << "motor = " << motor <<
-                 " reset steps = " << s_steps <<
-                 std::endl;
-}
-void DemoMode::upMove(long &steps, std::string &motor)
-{
-    std::cout << "Move leg up" << std::endl;
-    motor = "l";
-    steps = 15000;
-    l_steps = steps;
-    std::cout << "motor = " << motor <<
-                 " steps = " << l_steps <<
-                 std::endl;
-}
-void DemoMode::downMove(long &steps, std::string &motor)
-{
-    std::cout << "Move leg up" << std::endl;
-    motor = "l";
-    steps = 12000;
-    l_steps = steps;
-    std::cout << "motor = " << motor <<
-                 " steps = " << l_steps <<
-                 std::endl;
-}
-void DemoMode::flexMoveDown(long &steps, std::string &motor)
-{
-    std::cout << "Move leg up" << std::endl;
-    motor = "f";
-    steps = 15000;
-    s_steps = steps;
-    std::cout << "motor = " << motor <<
-                 " steps = " << s_steps <<
-                 std::endl;
-}
-void DemoMode::flexMoveRight(long &steps, std::string &motor)
-{
-    std::cout << "Move leg up" << std::endl;
-    motor = "f";
-    steps = 15000;
-    s_steps = steps;
-    std::cout << "motor = " << motor <<
-                 " steps = " << s_steps <<
-                 std::endl;
-}
-void DemoMode::resetSteps()
-{
-    l_steps = 0;
-    s_steps = 0;
-}
-
-void DemoMode::sendCommandToChannel(SerialChannel serial, Motors motors, long &steps)
-{
-
-    if(ready_to_move == true){
-        serial.tx(motors.commandFactory("f", s_steps));
-        std::cout << "Response...";
-        std::string stdStringData = serial.rx();
-        std::cout << "data = " << stdStringData << std::endl;
-
-        serial.tx(motors.commandFactory("l", l_steps));
-        std::cout << "Response...";
-        std::string stdStringData1 = serial.rx();
-        std::cout << "data = " << stdStringData1 << std::endl;
-
-        resetSteps();
-        std::cout << "Motor commands sent" << std::endl;
-    }else{
-        std::cout << "You must first review the commands with by typing 'r'" << std::endl;
-    }
-    ready_to_move = false;
-}
-
-
 ManualInput::ManualInput()
 {
 
@@ -391,11 +281,16 @@ void MainSelection::mainKeySelection(int &x, SerialChannel serial)
 {
     switch(x) {
         case 100: // d
-            std::cout << "DEMO Mode" << std::endl;
+            std::cout << "MANIPULATOR DEMO MODE" << std::endl;
+            std::cout << "\tUsage: " << std::endl
+                      << "\t (i)  Use 'q' to quit demo program" << std::endl
+                      << "\t (ii) Press ENTER to continue with the demonstation" << std::endl
+                      << std::endl;
             while(true){
                     demoMode.run(serial,motors);
                     Sleep(1000);
             }
+             break;
         case 109: // m
             std::cout << "Manual Input Mode" << std::endl;
             std::cout << "Usage: " << std::endl
@@ -425,3 +320,247 @@ void MainSelection::mainKeySelection(int &x, SerialChannel serial)
     }
  }
 
+DemoMode::DemoMode()
+{
+
+}
+
+
+
+//void DemoMode::lowerFlexLeg(long &liftPosition, Motors &motors, long &flexPostion, long &flexsteps, long &liftsteps, SerialChannel &serial)
+//{
+//    std::string motor;
+//    motorPosition(serial, motors);
+//    liftPosition = y_steps;
+//    liftsteps = -15000;
+//    liftPosition = liftPosition + liftsteps;
+//    flexPostion = z_steps;
+//    flexsteps = 3000;
+//    flexPostion = flexPostion + flexsteps;
+//    downMove(liftsteps, motor);
+//    flexMoveDown(flexsteps, motor);
+//    std::cout << "Flexing Leg..." << std::endl;
+//    motorPosition(serial, motors);
+//    while(y_steps != liftPosition && z_steps != flexPostion){
+//        motorPosition(serial, motors);
+//    }
+//}
+
+//void DemoMode::flexLeg(long &flexsteps, Motors &motors, long &flexPostion, SerialChannel &serial)
+//{
+//    std::string motor;
+//    motorPosition(serial, motors);
+//    flexPostion = z_steps;
+//    flexsteps = 14500;
+//    flexPostion = flexPostion + flexsteps;
+//    flexMoveRight(flexsteps, motor);
+//    std::cout << "Raising Leg..." << std::endl;
+//    motorPosition(serial, motors);
+//    while(y_steps != flexPostion){
+//        motorPosition(serial, motors);
+//    }
+//}
+
+
+//void DemoMode::downMove(long &steps, std::string &motor)
+//{
+//    std::cout << "Move leg up" << std::endl;
+//    l_steps = steps;
+//    motor = "l";
+//    std::cout << "motor = " << motor <<
+//                 " steps = " << l_steps <<
+//                 std::endl;
+//}
+//void DemoMode::flexMoveDown(long &steps, std::string &motor)
+//{
+//    std::cout << "Move leg up" << std::endl;
+//    s_steps = steps;
+//    motor = "f";
+//    std::cout << "motor = " << motor <<
+//                 " steps = " << s_steps <<
+//                 std::endl;
+//}
+//void DemoMode::flexMoveRight(long &steps, std::string &motor)
+//{
+//    std::cout << "Move leg up" << std::endl;
+//    s_steps = steps;
+//    motor = "f";
+//    std::cout << "motor = " << motor <<
+//                 " steps = " << s_steps <<
+//                 std::endl;
+//}
+
+void DemoMode::upMove(SerialChannel serial, Motors motors, long &steps, std::string &motor)
+{
+    std::cout << "Move leg up" << std::endl;
+    steps = 15000;
+    l_steps = steps;
+    motor = "l";
+    std::cout << "motor = " << motor <<
+                 " steps = " << l_steps <<
+                 std::endl;
+    sendCommandToChannel(serial, motors);
+}
+
+void DemoMode::raiseLeg(SerialChannel serial, Motors motors)
+{
+    std::string motor;
+    motorPosition(serial, motors);
+    std::cout << "yposition is = " << ysteps << std::endl;
+
+    long liftPosition = ysteps;
+    long liftsteps = l_steps;
+    liftPosition = liftPosition + liftsteps;
+    std::cout << "Lift position 0 is = " << liftPosition << std::endl;
+
+    upMove(serial, motors, steps, motor);
+    std::cout << "Raising Leg..." << std::endl;
+    motorPosition(serial, motors);
+    while(ysteps != liftPosition){
+        motorPosition(serial, motors);
+        std::cout << "Lift position end is = " << liftPosition << std::endl;
+    }
+    exit(0);
+}
+void DemoMode::resetSteps()
+{
+    l_steps = 0;
+    s_steps = 0;
+}
+
+void DemoMode::sendCommandToChannel(SerialChannel serial, Motors motors)
+{
+
+    if(ready_to_move == true){
+        serial.tx(motors.commandFactory("f", s_steps));
+        std::cout << "Response...";
+        std::string stdStringData = serial.rx();
+        std::cout << "data = " << stdStringData << std::endl;
+
+        serial.tx(motors.commandFactory("l", l_steps));
+        std::cout << "Response...";
+        std::string stdStringData1 = serial.rx();
+        std::cout << "data = " << stdStringData1 << std::endl;
+
+        resetSteps();
+        std::cout << "Motor commands sent" << std::endl;
+    }else{
+        std::cout << "You must first review the commands with by typing 'r'" << std::endl;
+    }
+    ready_to_move = false;
+}
+
+void DemoMode::DemoMove(SerialChannel serial, Motors motors)
+{
+    long flexsteps = 0;
+    long liftsteps = 0;
+    long liftPosition = 0;
+    long flexPostion = 0;
+
+    resetSteps();//reset y_steps and z_steps
+
+    //Raise leg
+    std::cout << "doing raiseleg now" << std::endl;
+    raiseLeg(serial, motors);
+    //lower leg and flex slightly
+//    lowerFlexLeg(liftPosition, motors, flexPostion, flexsteps, liftsteps, serial);
+    //flex leg to 90 degrees
+//    flexLeg(flexsteps, motors, flexPostion, serial);
+//    resetFlexMove(steps, motor);
+//    resetLiftMove(steps, motor);
+}
+
+void DemoMode::motorPosition(SerialChannel serial, Motors motors)
+{
+    serial.tx(motors.commandFactory("p", 0));
+    std::string data = serial.rx();
+    //Find the unique identifier cpos
+    std::size_t found = data.find("cpos");
+    long x_steps = 0, y_steps = 0 ,z_steps = 0;
+    char a;
+    char cposIdentify[100];
+    if (found!=std::string::npos){ //no 'cpos' substring in data
+        sscanf(data.c_str(),"%c %s %ld %ld %c",&a, &cposIdentify, &z_steps, &y_steps,&a);
+        std::cout << "Arduino x_steps = " << x_steps << std::endl;
+        std::cout << "Arduino z_steps = " << z_steps << std::endl;
+        std::cout << "Arduino y_steps = " << y_steps << std::endl;
+        std::cout << "---" << std::endl;
+        xsteps = x_steps, ysteps = y_steps ,zsteps = z_steps;
+        std::cout << "---" << std::endl;
+    }
+ }
+void DemoMode::resetFlexMove(long &steps, std::string &motor)
+{
+    std::cout << "Reset Flex Axis" << std::endl;
+    motor = "f";
+    steps = -19000;
+    s_steps = steps;
+    std::cout << "flex motor = " << motor <<
+                 " reset flex steps = " << s_steps <<
+                 std::endl;
+}
+void DemoMode::resetLiftMove(long &steps, std::string &motor)
+{
+    std::cout << "Reset Lift Axis" << std::endl;
+    motor = "l";
+    steps = -19000;
+    l_steps = steps;
+    std::cout << "lift motor = " << motor <<
+                 " lift reset steps = " << l_steps <<
+                 std::endl;
+}
+void DemoMode::StartDemo(int &m, long &steps, std::string &motor, SerialChannel serial, Motors motors)
+{
+    switch(m) {
+        case 113: // q
+            std::cout << "Exiting Program" << std::endl;
+            exit(0);
+        case 13: // enter
+        std::cout << "Start Demo Program" << std::endl;
+
+            ready_to_move = true;
+            motor = "l";
+            resetLiftMove(steps, motor);
+            motor = "f";
+            resetFlexMove(steps, motor);
+ //           motorPosition(serial, motors);
+            std::cout << "---" << std::endl;
+            std::cout << "---" << std::endl;
+            while(zsteps != 0 && ysteps != 0 && xsteps != 0){
+                std::cout << "x'steps = " << xsteps << std::endl;
+                std::cout << "z'steps = " << zsteps << std::endl;
+                std::cout << "y'steps = " << ysteps << std::endl;
+                std::cout << "Please Wait..." << std::endl;
+                motorPosition(serial, motors);
+                Sleep(3000);
+            }
+            std::cout << "x-steps = " << xsteps << std::endl;
+            std::cout << "z-steps = " << zsteps << std::endl;
+            std::cout << "y-steps = " << ysteps << std::endl;
+            DemoMove(serial, motors);
+            break;
+        default:
+            printf("Unknown keyboard input in manual mode: ascii = %d\n",(int) m);
+            break;
+    }
+}
+
+void DemoMode::run(SerialChannel serial, Motors motors)
+{
+    if(kbhit()){
+        stop_auto = true;
+//        std::string motors;
+        std::string motor;
+        long steps;
+        std::cout << "Press ESC to exit demo" << std::endl;
+        int m = getch();
+        if(m == 113 || m == 13)
+        {
+            std::cout << "We made it" << std::endl;
+            StartDemo(m, steps, motor, serial, motors);
+
+        }else{
+            std::cout << "please press ENTER to start demo or q to quit" << std::endl;
+        }
+    }
+}

@@ -13,7 +13,6 @@ int main()
     int menu = getch();
     while(true){
         while(menu == 100 || menu == 109 || menu == 97 ){
-            std::cout << "Got a key:Menu = " << menu << std::endl;
             mainSelection.mainKeySelection(menu, serial);
         }
         std::cout << "Wrong Selection - Press d, m or a" << std::endl;
