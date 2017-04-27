@@ -88,8 +88,8 @@ void setup()
     pinMode(A3, INPUT_PULLUP);//Setup lift limit BOTTOM switch to Stop motor
     
   // SET INITIAL POSITION FOR MOTORS
-    flexMotor.setCurrentPosition(0); //set position to 0 where ever the motor start - will change that once a switch is reached
-    liftMotor.setCurrentPosition(0); //set position to 0 where ever the motor start - will change that once a switch is reached
+    flexMotor.setCurrentPosition(5); //set position to 0 where ever the motor start - will change that once a switch is reached
+    liftMotor.setCurrentPosition(5); //set position to 0 where ever the motor start - will change that once a switch is reached
 
 } // END OF SETUP
 
