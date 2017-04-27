@@ -63,9 +63,9 @@ public:
     bool stop_auto = false;
     char demo;
     char m;
-    long xsteps = 10;
-    long ysteps = 550;
-    long zsteps = 23;
+    double xsteps = 0;
+    double ysteps = 550;
+    double zsteps = 0;
 
 private:
     bool ready_to_move = false;
