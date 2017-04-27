@@ -64,29 +64,25 @@ public:
     char demo;
     char m;
     double xsteps = 0;
-    double ysteps = 550;
+    double ysteps = 0;
     double zsteps = 0;
 
 private:
     bool ready_to_move = false;
-    void StartDemo(int &m, long &steps, std::string &motor, SerialChannel serial, Motors motors);
-    void resetLiftMove(long &steps, std::string &motor);
-    void resetFlexMove(long &steps, std::string &motor);
+//    void StartDemo(int &m, long &steps, std::string &motor, SerialChannel serial, Motors motors);
+    void StartDemo(int &m, SerialChannel serial, Motors motors);
+    void resetLiftMove();
+    void resetFlexMove();
     void motorPosition(SerialChannel serial, Motors motors);
-    void DemoMove(SerialChannel serial, Motors motors);
+    void moveControl(SerialChannel serial, Motors motors);
     void resetSteps();
     void sendCommandToChannel(SerialChannel serial, Motors motors);
     void raiseLeg(SerialChannel serial, Motors motors);
-    void upMove(SerialChannel serial, Motors motors, long &steps, std::string &motor);
-
-/*
-    void downMove(long &steps, std::string &motor);
-    void flexMoveDown(long &steps, std::string &motor);
-    void flexMoveRight(long &steps, std::string &motor);
-
-    void flexLeg(long &flexsteps, Motors &motors, long &flexPostion, SerialChannel &serial);
-    void lowerFlexLeg(long &liftPosition, Motors &motors, long &flexPostion, long &flexsteps, long &liftsteps, SerialChannel &serial);
-*/
+    void upMove(SerialChannel serial, Motors motors);
+    void flexLiftControl(long newFlexSteps, long newLiftSteps, SerialChannel serial, Motors motors);
+    void flexLiftCommand(long newFlexSteps, long newLiftSteps, SerialChannel serial, Motors motors);
+ //   void flexMoveRight(SerialChannel serial, Motors motors);
+ //   void flexLeg(long &flexsteps, Motors &motors, long &flexPostion, SerialChannel &serial);
 };
 class MainSelection
 {

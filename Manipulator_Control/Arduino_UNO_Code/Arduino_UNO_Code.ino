@@ -17,8 +17,8 @@ unsigned char inputel=0;
   //Define variables to switch pins
   int FRsw = A1; //variable for flex R switch pin
   int FLsw = A0; //variable for flex L switch pin
-  int LRsw = 1; //variable for Lift R switch
-  int LLsw = 0; //variable for Lift L switch
+  int LRsw = A2; //variable for Lift T switch
+  int LLsw = A3; //variable for Lift B switch
   int TRsw = 10; //variable for Thight R switch
   int TLsw = 9; //variable for Thigh L switch
 
@@ -84,8 +84,8 @@ void setup()
     //Setup limit switch pins as inputs and set high via pullup resistor - will work even is arduino is not working
     pinMode(A1, INPUT_PULLUP);//Setup flex limit RIGHT switch to Stop motor
     pinMode(A0, INPUT_PULLUP);//Setup flex limit LEFT switch to Stop motor
-    pinMode(A2, INPUT_PULLUP);//Setup lift limit BOTTOM switch to Stop motor
-    pinMode(A3, INPUT_PULLUP);//Setup lift limit TOP switch to Stop motor
+    pinMode(A2, INPUT_PULLUP);//Setup lift limit TOP switch to Stop motor
+    pinMode(A3, INPUT_PULLUP);//Setup lift limit BOTTOM switch to Stop motor
     
   // SET INITIAL POSITION FOR MOTORS
     flexMotor.setCurrentPosition(0); //set position to 0 where ever the motor start - will change that once a switch is reached
@@ -159,8 +159,8 @@ void loop() {
   //check if limits were reached
   FRswVal = digitalRead(FRsw);
   FLswVal = digitalRead(FLsw);
-  LRswVal = digitalRead(LRsw);
-  LLswVal = digitalRead(LLsw);
+  LRswVal = digitalRead(LRsw);//top 
+  LLswVal = digitalRead(LLsw);//bottom
 
   F_StepsRemaining = flexMotor.distanceToGo();
   L_StepsRemaining = liftMotor.distanceToGo();
@@ -195,11 +195,11 @@ void loop() {
     L_ActualCurrentPostion = liftMotor.currentPosition();
 
    //Left switch   
-      if(FLswVal == LOW){ //A0
+      if(FLswVal == LOW){ //A0 - Left switch of flex motor
         flexMotor.setSpeed(0);
         flexMotor.setCurrentPosition(0); //set position to 0 once the Right switch is reached
       }
-      if(LLswVal == LOW){ //A?
+      if(LLswVal == LOW){ //A3 - Bottom switch of lift motor
         liftMotor.setSpeed(0);
         liftMotor.setCurrentPosition(0); //set position to 0 once the Right switch is reached
       }
@@ -213,7 +213,7 @@ void loop() {
               flexMotor.move(F_StepsRemaining);//change direction when at left switch
         */
       }
-      if(LRswVal == LOW){ //A?
+      if(LRswVal == LOW){ //A2
         flexMotor.setSpeed(0);
       }
   }//end action while count = 1

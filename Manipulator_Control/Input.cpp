@@ -313,24 +313,6 @@ DemoMode::DemoMode()
 {
 
 }
-//void DemoMode::lowerFlexLeg(long &liftPosition, Motors &motors, long &flexPostion, long &flexsteps, long &liftsteps, SerialChannel &serial)
-//{
-//    std::string motor;
-//    motorPosition(serial, motors);
-//    liftPosition = y_steps;
-//    liftsteps = -15000;
-//    liftPosition = liftPosition + liftsteps;
-//    flexPostion = z_steps;
-//    flexsteps = 3000;
-//    flexPostion = flexPostion + flexsteps;
-//    downMove(liftsteps, motor);
-//    flexMoveDown(flexsteps, motor);
-//    std::cout << "Flexing Leg..." << std::endl;
-//    motorPosition(serial, motors);
-//    while(y_steps != liftPosition && z_steps != flexPostion){
-//        motorPosition(serial, motors);
-//    }
-//}
 //void DemoMode::flexLeg(long &flexsteps, Motors &motors, long &flexPostion, SerialChannel &serial)
 //{
 //    std::string motor;
@@ -345,24 +327,6 @@ DemoMode::DemoMode()
 //        motorPosition(serial, motors);
 //    }
 //}
-//void DemoMode::downMove(long &steps, std::string &motor)
-//{
-//    std::cout << "Move leg up" << std::endl;
-//    l_steps = steps;
-//    motor = "l";
-//    std::cout << "motor = " << motor <<
-//                 " steps = " << l_steps <<
-//                 std::endl;
-//}
-//void DemoMode::flexMoveDown(long &steps, std::string &motor)
-//{
-//    std::cout << "Move leg up" << std::endl;
-//    s_steps = steps;
-//    motor = "f";
-//    std::cout << "motor = " << motor <<
-//                 " steps = " << s_steps <<
-//                 std::endl;
-//}
 //void DemoMode::flexMoveRight(long &steps, std::string &motor)
 //{
 //    std::cout << "Move leg up" << std::endl;
@@ -372,13 +336,50 @@ DemoMode::DemoMode()
 //                 " steps = " << s_steps <<
 //                 std::endl;
 //}
-void DemoMode::upMove(SerialChannel serial, Motors motors, long &steps, std::string &motor)
+void DemoMode::flexLiftCommand(long newFlexSteps, long newLiftSteps, SerialChannel serial, Motors motors)
 {
-    std::cout << "Moving leg up - 'upMove'" << std::endl;
-    steps = 15000;
-    l_steps = steps;
-    motor = "l";
-    std::cout << "==>'sendCommandToChannel' Command to motor " << motor <<
+    motorPosition(serial, motors);//read existing position data into xsteps, ysteps and zsteps
+    double liftPosition = ysteps;
+    double flexPosition = zsteps;
+    s_steps = newFlexSteps+flexPosition;// Use absolute position in UNO
+
+    std::cout << "--New flex Steps to be added = " << newFlexSteps << std::endl;
+    std::cout << "--New lift Steps to be added = " << newLiftSteps << std::endl;
+    std::cout << "" << std::endl;
+
+    l_steps = newLiftSteps+liftPosition;//Use absolute position in UNO
+    sendCommandToChannel(serial, motors);
+}
+void DemoMode::flexLiftControl(long newFlexSteps, long newLiftSteps, SerialChannel serial, Motors motors)
+{
+    //CHECK INITIAL POSITION OF FLEX and LIFT MOTOR
+    motorPosition(serial, motors);//read position data into xsteps, ysteps and zsteps
+    double liftPosition = ysteps;
+    double flexPosition = zsteps;
+    std::cout << "====================================================================" << std::endl;
+    std::cout << "           ---------LOWER AND FLEX LEG PHASE-----------" << std::endl;
+    std::cout << "Starting flex and Lift position is = " << flexPosition <<"," <<liftPosition << std::endl;
+
+    //COMMAND TO FlEX and LIFT MOTORS
+    flexLiftCommand(newFlexSteps, newLiftSteps,serial, motors);
+    std::cout << "Lowering Leg..." << std::endl;
+
+    //CHECK CURRENT LIFT POSITION AGAINST ACTUAL UNO STEPS
+    liftPosition = l_steps;//final lift position
+    flexPosition = s_steps;//final flex position
+
+    motorPosition(serial, motors);// read new position of flex and lift
+    while(ysteps != liftPosition || zsteps != flexPosition){
+        motorPosition(serial, motors);//reading position as lift motor do steps
+    }
+    exit(0);
+}
+void DemoMode::upMove(SerialChannel serial, Motors motors)
+{
+    long newLiftSteps;
+    newLiftSteps = 5;
+    l_steps = newLiftSteps;
+    std::cout << "==>Command to lift motor" <<
                  ": steps = " << l_steps <<
                  std::endl;
     sendCommandToChannel(serial, motors);
@@ -386,28 +387,23 @@ void DemoMode::upMove(SerialChannel serial, Motors motors, long &steps, std::str
 
 void DemoMode::raiseLeg(SerialChannel serial, Motors motors)
 {
-    std::string motor;
+    //CHECK INITIAL POSITION OF LIFT MOTOR
     motorPosition(serial, motors);//read position data into xsteps, ysteps and zsteps
-    std::cout << "lift motor start position is = " << ysteps << std::endl;
+    double liftPosition = ysteps;
+    double flexPosition = zsteps;
+    std::cout << "Starting flex and Lift position is = " << flexPosition <<"," <<liftPosition << std::endl;
 
-    upMove(serial, motors, steps, motor);//send a command to lift motor
+    //COMMAND TO LIFT MOTOR
+    upMove(serial, motors);//send a command to lift motor
     std::cout << "Raising Leg..." << std::endl;
     motorPosition(serial, motors);// read new position of lift
-    double liftPosition = 0.0;
-    std::cout << "l_steps is = " << l_steps << std::endl;
-    std::cout << "Lift position is = " << liftPosition << std::endl;
 
-    liftPosition = round(ysteps);//current position ('ysteps' from Uno) of lift motor
-    double liftsteps = l_steps;// steps as set in upmove
-    liftPosition =+ l_steps;//add new steps to existing position
-    std::cout << "Lift position currently is = " << liftPosition << std::endl;
-
-    while(ysteps != (-liftPosition)){
+    //CHECK CURRENT LIFT POSITION AGAINST ACTUAL UNO STEPS
+    liftPosition =+ l_steps;//add new steps to be executed to existing position
+    while(ysteps != liftPosition){
         motorPosition(serial, motors);//reading position as lift motor do steps
-        std::cout << "Current Lift position is = " << liftPosition << std::endl;
-        std::cout << "Current Lift (ysteps) position is = " << ysteps << std::endl;
     }
-    exit(0);
+//    exit(0); //for testing
 }
 void DemoMode::resetSteps()
 {
@@ -417,34 +413,28 @@ void DemoMode::resetSteps()
 
 void DemoMode::sendCommandToChannel(SerialChannel serial, Motors motors)
 {
-
-    if(ready_to_move == true){
         serial.tx(motors.commandFactory("f", s_steps));//write steps to port
-        std::cout << "-Tx Response for flex motor...";
+        std::cout << "-Send steps to flex motor - ";
+        Sleep(5);
         std::string stdStringData = serial.rx();
-        std::cout << "Rx data from flex motor = " << stdStringData << std::endl;
+        std::cout << "Response ... " << stdStringData << std::endl;
 
         serial.tx(motors.commandFactory("l", l_steps));
-        std::cout << "-Tx Response for lift motor...";
+        std::cout << "-Send steps to lift motor - ";
+        Sleep(5);
         std::string stdStringData1 = serial.rx();
-        std::cout << "Rx data from lift motor = " << stdStringData1 << std::endl;
-//        resetSteps();
+        std::cout << "Response... " << stdStringData1 << std::endl;
         std::cout << "**Motor commands sent" << std::endl;
-    }else{
-        std::cout << "You must first review the commands with by typing 'r'" << std::endl;
-    }
-    ready_to_move = false;
+        std::cout << "" << std::endl;
 }
 
-void DemoMode::DemoMove(SerialChannel serial, Motors motors)
+void DemoMode::moveControl(SerialChannel serial, Motors motors)
 {
+    long newFlexSteps = 0; //New input for flex motor
+    long newLiftSteps = 0;//New input for lift motor
     resetSteps();//reset l_steps and s_steps
-
-    //Raise leg
-    std::cout << "Command for raiseleg control - 'DemoMove'" << std::endl;
     raiseLeg(serial, motors);
-    //lower leg and flex slightly
-//    lowerFlexLeg(serial, motors);
+    flexLiftControl(7, -3, serial, motors);
     //flex leg to 90 degrees
 //    flexLeg(serial, motors);
 //    resetFlexMove(steps, motor);
@@ -462,57 +452,60 @@ void DemoMode::motorPosition(SerialChannel serial, Motors motors)
     char cposIdentify[100];
     if (found!=std::string::npos){ //no 'cpos' substring in data
         sscanf(data.c_str(),"%c %s %ld %ld %c",&a, &cposIdentify, &z_steps, &y_steps,&a);
-        std::cout << "Arduino x_steps = " << x_steps << std::endl;
-        std::cout << "Arduino z_steps = " << z_steps << std::endl;
-        std::cout << "Arduino y_steps = " << y_steps << std::endl;
-        std::cout << "---" << std::endl;
-        xsteps = x_steps, ysteps = y_steps ,zsteps = z_steps;
-        std::cout << "---" << std::endl;
+        xsteps = -x_steps, ysteps = -y_steps ,zsteps = -z_steps;
+        std::cout << "------>Manipulator Postion from UNO (x-N/A, y-lift, z-flex) = " << xsteps << ", "<< ysteps << ", "<< zsteps << std::endl;
+        std::cout << "                                             " << std::endl;
     }
  }
-void DemoMode::resetFlexMove(long &steps, std::string &motor)
+void DemoMode::resetFlexMove()
 {
+    long newFlexSteps;
     std::cout << "Reset Flex Axis" << std::endl;
-    motor = "f";
-    steps = -19000;
-    s_steps = steps;
-    std::cout << "flex motor = " << motor <<
-                 " reset flex steps = " << s_steps <<
-                 std::endl;
+    newFlexSteps = -3000;
+    s_steps = newFlexSteps;
 }
-void DemoMode::resetLiftMove(long &steps, std::string &motor)
+void DemoMode::resetLiftMove()
 {
+    long newLiftSteps;
     std::cout << "Reset Lift Axis" << std::endl;
-    motor = "l";
-    steps = -19000;
-    l_steps = steps;
-    std::cout << "lift motor = " << motor <<
-                 " lift reset steps = " << l_steps <<
-                 std::endl;
+    newLiftSteps = -2000;
+    l_steps = newLiftSteps;
 }
-void DemoMode::StartDemo(int &m, long &steps, std::string &motor, SerialChannel serial, Motors motors)
+void DemoMode::StartDemo(int &m, SerialChannel serial, Motors motors)
 {
+    std::string motor;
+    int countsteps = 0;
     switch(m) {
         case 113: // q
             std::cout << "Exiting Program" << std::endl;
             exit(0);
         case 13: // enter
         std::cout << "Start Demo Program" << std::endl;
-
+        std::cout << "====================================================================" << std::endl;
+        std::cout << "           ---------INITIAL LEG LIFT PHASE-----------" << std::endl;
             ready_to_move = true;
-            motor = "l";
-            resetLiftMove(steps, motor);
-            motor = "f";
-            resetFlexMove(steps, motor);
- //           motorPosition(serial, motors);
-            std::cout << "--'StartDemo - resetFlexMove'" << std::endl;
+ //           resetLiftMove(); //while testing leave these disabled
+ //           resetFlexMove();//while testing leave these disabled
+ //           sendCommandToChannel(serial,motors);
+            motorPosition(serial, motors);
+            std::cout << "--'Reset Motors'" << std::endl;
+
+            //CHECK MOTORS ARE IN ZERO POSITION
             while(xsteps != 0 || ysteps != 0 || zsteps != 0){
-                std::cout << "Steps for all motors not zero = " << ysteps << std::endl;
+                if(countsteps = 0){
+                std::cout << "Steps for x motors not zero = " << xsteps << std::endl;
+                std::cout << "Steps for y motors not zero = " << ysteps << std::endl;
+                std::cout << "Steps for z motors not zero = " << zsteps << std::endl;
+                }
+                Sleep(300);
+                countsteps =+ 1;
                 motorPosition(serial, motors);
-                std::cout << "Steps for all motors now zero = " << ysteps << std::endl;
+                std::cout << "------>Steps (x, y, z) = " << xsteps << ", "<< ysteps << ", "<< zsteps << std::endl;
             }
-            std::cout << "-##Steps for (y) motors were reset = " << ysteps << std::endl;
-            DemoMove(serial, motors);
+            std::cout << "**Steps for all motors now zero (x, y, z) = " << xsteps << ", "<< ysteps << ", "<< zsteps << std::endl;
+            //START DEMO MOVES
+            moveControl(serial, motors);
+            exit(0);
             break;
         default:
             printf("Unknown keyboard input in manual mode: ascii = %d\n",(int) m);
@@ -524,15 +517,12 @@ void DemoMode::run(SerialChannel serial, Motors motors)
 {
     if(kbhit()){
         stop_auto = true;
-//        std::string motors;
-        std::string motor;
-        long steps;
+ //       long steps;
         std::cout << "Press ESC to exit demo" << std::endl;
         int m = getch();
         if(m == 113 || m == 13)
         {
-            std::cout << "We made it" << std::endl;
-            StartDemo(m, steps, motor, serial, motors);
+            StartDemo(m, serial, motors);
 
         }else{
             std::cout << "please press ENTER to start demo or q to quit" << std::endl;
