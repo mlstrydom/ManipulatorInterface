@@ -93,5 +93,12 @@ public:
     AutoInput autoInput;
     DemoMode demoMode;
     void mainKeySelection(int &x, SerialChannel serial);
+    std::string password;
+    std::string manualPassword = "mm";
+    std::string autoPassword = "am";
+    std::string demoPassword = "legUp";
+    char ch;
+    const char ENTER = 13;
+    int countm = 0;
 };
 #endif // MANUALINPUT_H

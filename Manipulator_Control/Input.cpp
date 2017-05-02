@@ -295,38 +295,76 @@ void MainSelection::mainKeySelection(int &x, SerialChannel serial)
 {
     switch(x) {
         case 100: // d
+        std::cout << "Enter password: ";
+        password = "";
+        while((ch = _getch()) != ENTER)
+        {
+            password += ch;
+            std::cout << '*';
+        }
+        std::cout << std::endl;
+        if (password == demoPassword){
             std::cout << "MANIPULATOR DEMO MODE" << std::endl;
             std::cout << "\tUsage: " << std::endl
                       << "\t (i)  Use 'q' to quit demo program" << std::endl
                       << "\t (ii) Press ENTER to continue with the demonstation" << std::endl
-                      << std::endl;
-            while(true){
+                      << std::endl;        }
+            while(password == demoPassword){
                     demoMode.run(serial,motors);
                     Sleep(1000);
             }
+            std::cout << "Close but not there yet! - " ;
              break;
         case 109: // m
-            std::cout << "Manual Input Mode" << std::endl;
-            std::cout << "Usage: " << std::endl
-                      << "\t Use Left and Right arrow key for slider motor" << std::endl
-                      << "\t Use Up and Down arrow key for Lift motor" << std::endl
-                      << "\t Use 'i' key for manual step entry (motor (f or l) steps)" << std::endl
-                      << "\t Use 'r' key for step summary" << std::endl
-                      << "\t Use 'Enter' key to send steps to motors" << std::endl
-                      << std::endl;
-            while(true){
+            if (countm < 1){
+                std::cout << "Manual Input Mode" << std::endl;
+                std::cout << "Usage: " << std::endl
+                          << "\t Use Left and Right arrow key for slider motor" << std::endl
+                          << "\t Use Up and Down arrow key for Lift motor" << std::endl
+                          << "\t Use 'i' key for manual step entry (motor (f or l) steps)" << std::endl
+                          << "\t Use 'r' key for step summary" << std::endl
+                          << "\t Use 'Enter' key to send steps to motors" << std::endl
+                          << std::endl;
+            }
+            std::cout << "Enter password: ";
+            password = "";
+            while((ch = _getch()) != ENTER)
+            {
+                password += ch;
+                std::cout << '*';
+            }
+            std::cout << std::endl;
+            if (password == manualPassword){
+                std::cout << "Please enter manual command: ";
+            }
+            while(password == manualPassword){
                 manualInput.run(serial,motors);
    //             if(!manualInput.stop_auto){
    //                 autoInput.run(serial,motors);
    //         }
            }
+           std::cout << "Good try! - Nearly fooled me! - " ;
+           countm += 1;
+ //          std::cout << countm << std::endl;
         break;
         case 97: // a
-            std::cout << "AUTO Mode" << std::endl;
-            while(true){
-                    autoInput.run(serial,motors);
-                    Sleep(1000);
+//            std::cout << "AUTO Mode" << std::endl;
+            std::cout << "Enter Auto password: ";
+            password = "";
+            while((ch = _getch()) != ENTER)
+            {
+                password += ch;
+                std::cout << '*';
             }
+            std::cout << std::endl;
+            if (password == autoPassword){
+                std::cout << "Entering Auto Mode: " << std::endl;
+                Sleep(2000);
+            }
+                while(password == autoPassword){
+                        autoInput.run(serial,motors);
+                        Sleep(1000);
+                }
         break;
         default:
             printf("Unknown keyboard input in main menu: ascii = %d\n",(int) x);
