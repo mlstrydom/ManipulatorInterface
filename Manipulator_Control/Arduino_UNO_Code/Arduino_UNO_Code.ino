@@ -8,7 +8,7 @@ const int led_off = LOW;
 //const int freq = //counter for resetting PWM output. Desired Frequency / interupt frequency.
 long int duty = 0; //# of PWM cycles output is high
 char uartind=0;
-char uartbuff[40];
+char uartbuff[100];
 float *packet;
 unsigned char inputel=0;
 
@@ -30,6 +30,8 @@ unsigned char inputel=0;
 
   //Defines Variables for state of steps and position
   long F_STEPS ;                //variable to store steps required to move
+  long F_SPEED = 100;                //variable to store steps required to move
+  long L_SPEED = 100;                //variable to store steps required to move
   long F_PositionReset;         //Set position to new current position once switch is hit
   long F_StepsRemaining;        //steps left to finish input
   long F_ActualCurrentPostion;  //variable to store actual position from 0
@@ -58,7 +60,7 @@ unsigned char inputel=0;
   AccelStepper thighMotor(1, 6, 12);//PUL:Pin 6, DIR:Pin 12
 
 //COMMAND TO MOVE MOTOR
-  //  $ f 500 # -> $ (start char) s (motor char) 4000 (number of steps) # (terminating char)
+  //  $ l 500 1200 # -> $ (start char) s (motor char) 4000 (number of steps) # (terminating char)
   
 void setup()
 {  
@@ -66,10 +68,10 @@ void setup()
     Serial.begin(baud);	// USB, communication to PC or Mac              //Initialise UART tranciver hardware  
  
   //SETUP MOTOR PARAMETERS
-    flexMotor.setMaxSpeed(12800); //approx. 2.5mm/sec - default = 12800
+    flexMotor.setMaxSpeed(100); //approx. 2.5mm/sec - default = 12800
     flexMotor.setAcceleration(1500); // Default = 4000
     flexMotor.move(0); // set initial speed to zero for safety
-    liftMotor.setMaxSpeed(6800); //approx. 2.5mm/sec
+    liftMotor.setMaxSpeed(100); //approx. 2.5mm/sec- default = 6800
     liftMotor.setAcceleration(1500);
     liftMotor.move(0); // set initial speed to zero for safety
 
@@ -88,8 +90,8 @@ void setup()
     pinMode(A3, INPUT_PULLUP);//Setup lift limit BOTTOM switch to Stop motor
     
   // SET INITIAL POSITION FOR MOTORS
-    flexMotor.setCurrentPosition(5); //set position to 0 where ever the motor start - will change that once a switch is reached
-    liftMotor.setCurrentPosition(5); //set position to 0 where ever the motor start - will change that once a switch is reached
+    flexMotor.setCurrentPosition(19000); //set position to 0 where ever the motor start - will change that once a switch is reached
+    liftMotor.setCurrentPosition(19000); //set position to 0 where ever the motor start - will change that once a switch is reached
 
 } // END OF SETUP
 
@@ -97,6 +99,7 @@ void loop() {
   
   char *pnt;
   long data;     //S1 S2 D1 D2 D3
+  long velocity;     
   unsigned char uartstr[10];
 	unsigned char a,c,dtr, motor;
   unsigned char b=0;
@@ -107,23 +110,22 @@ void loop() {
       if (uartbuff[0]=='$'||uartbuff[0]==0x42){//Detect '$' character in start byte, proceed to fill buffer with subsequent arrivals
           if (uartbuff[uartind]=='#'){//Detect '#' termination character at end of packet, proceed to extracting and processing data.  //Read packet. //Read packet. //Read packet. //Read packet.
              //Serial.println("Command Accepted"); 
-             sscanf(uartbuff,"%c %c %ld %c",&a, &motor, &data,&a);
+             sscanf(uartbuff,"%c %c %ld %ld %c",&a, &motor, &data, &velocity, &a);
              if(motor == 'l'){
-               // Serial.println("Lift motor commanded. # steps:");
                 char data_packet[100];
-                sprintf(data_packet, "# %ld $", data);
+                sprintf(data_packet, "# %ld %ld $", data, velocity);
                 Serial.print(data_packet);
-                L_STEPS = data; //Read steps in global variable
+                L_STEPS = data; //Read steps in global variable                char data_packet[100];
+                L_SPEED = velocity;
+                liftMotor.setMaxSpeed(L_SPEED);
                 liftMotor.moveTo(-data);//move to data steps as specified via terminal or program
-                // Serial.println(count);
-                // Serial.println(L_STEPS);
-                // Serial.println(data);
               }  
              if(motor == 'f'){
-                //Serial.println("Flex motor commanded. # steps:"); //This command makes the comms slow
                 char data_packet[100];
-                sprintf(data_packet, "# %ld $", data);
+                sprintf(data_packet, "# %ld %ld $", data, velocity);
                 Serial.print(data_packet);
+                F_SPEED = velocity;
+                flexMotor.setMaxSpeed(F_SPEED);
                 F_STEPS = data; //Read steps in global variable
                 flexMotor.moveTo(-data);//move to data steps as specified via terminal or program
               }  
@@ -134,7 +136,24 @@ void loop() {
                   sprintf(data_packet, "# cpos %ld %ld $", F_ActualCurrentPostion, L_ActualCurrentPostion);
                   Serial.print(data_packet);               
               }
-              //for(a=0;a<=4;a++){data[a]=0;} //clear buffer to prevent future contamination                 
+              if(motor == 'L'){
+                char data_packet[100];
+                sprintf(data_packet, "# %ld %ld $", data, velocity);
+                Serial.print(data_packet);
+                L_STEPS = data; //Read steps in global variable                char data_packet[100];
+                L_SPEED = velocity;
+                liftMotor.setMaxSpeed(L_SPEED);
+                liftMotor.moveTo(-data);//move to data steps as specified via terminal or program
+              }  
+             if(motor == 'F'){
+                char data_packet[100];
+                sprintf(data_packet, "# %ld %ld $", data, velocity);
+                Serial.print(data_packet);
+                F_SPEED = velocity;
+                flexMotor.setMaxSpeed(F_SPEED);
+                F_STEPS = data; //Read steps in global variable
+                flexMotor.moveTo(-data);//move to data steps as specified via terminal or program
+              }   
                 data = 0;
                 inputel=0;
                 uartbuff[0]=' ';              //clear start of uart buffer to escape uart reception mode
@@ -217,6 +236,7 @@ void loop() {
         flexMotor.setSpeed(0);
       }
   }//end action while count = 1
+  
 flexMotor.run(); //steps only one step at a time
 liftMotor.run();
 }

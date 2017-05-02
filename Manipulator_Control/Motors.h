@@ -8,7 +8,7 @@ class Motors
 {
 public:
     Motors();
-    std::string commandFactory(std::string motor, long steps);
+    std::string commandFactory(std::string motor, long steps, long velocity);
 };
 
 #endif // MOTORS_H

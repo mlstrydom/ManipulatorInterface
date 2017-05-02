@@ -13,8 +13,11 @@ class Input
 public:
     virtual void run(SerialChannel serial, Motors motors) = 0; // abstract function
     long steps = 0;
+    long velocity = 0;
     long l_steps = 0;
     long s_steps = 0;
+    long l_velocity = 100;
+    long s_velocity = 100;
     boolean resetMove = FALSE;
     bool stop_auto = false;
     char x;
@@ -39,14 +42,14 @@ public:
     void run(SerialChannel serial, Motors motors);
 private:
     bool ready_to_move = false;
-    void upKey(long &steps, std::string &motor);
-    void downKey(long &steps, std::string &motor);
-    void rightKey(long &steps, std::string &motor);
-    void leftKey(long &steps, std::string &motor);
-    void checkArrowKeys(std::string &motor, long &steps);
-    void checkOtherKeys(Motors motors, SerialChannel serial, long &steps, std::string &motor);
+    void upKey(std::string &motor, long &steps, long &velocity);
+    void downKey(std::string &motor, long &steps, long &velocity);
+    void rightKey(std::string &motor, long &steps, long &velocity);
+    void leftKey(std::string &motor, long &steps, long &velocity);
+    void checkArrowKeys(std::string &motor, long &steps, long &velocity);
+    void checkOtherKeys(Motors motors, SerialChannel serial, std::string &motor);
     void commandSummary();
-    void sendCommandToChannel(SerialChannel serial, Motors motors, long &steps);
+    void sendCommandToChannel(SerialChannel serial, Motors motors);
     void resetSteps();
 };
 class DemoMode :public Input
@@ -59,9 +62,9 @@ public:
     bool stop_auto = false;
     char demo;
     char m;
-    double xsteps = 0;
-    double ysteps = 0;
-    double zsteps = 0;
+    long xsteps = 0;
+    long ysteps = 0;
+    long zsteps = 0;
 private:
     bool ready_to_move = false;
 //    void StartDemo(int &m, long &steps, std::string &motor, SerialChannel serial, Motors motors);
