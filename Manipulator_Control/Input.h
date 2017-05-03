@@ -16,8 +16,8 @@ public:
     long velocity = 0;
     long l_steps = 0;
     long s_steps = 0;
-    long l_velocity = 100;
-    long s_velocity = 100;
+    long l_velocity = 5000;
+    long s_velocity = 5000;
     boolean resetMove = FALSE;
     bool stop_auto = false;
     char x;
@@ -29,6 +29,9 @@ public:
     AutoInput();
     void init();
     void run(SerialChannel serial, Motors motors);
+    long xsteps = 0;
+    long ysteps = 0;
+    long zsteps = 0;
 private:
     kin::Kinematics kinematics;
     Characteristics c;
@@ -48,9 +51,15 @@ private:
     void leftKey(std::string &motor, long &steps, long &velocity);
     void checkArrowKeys(std::string &motor, long &steps, long &velocity);
     void checkOtherKeys(Motors motors, SerialChannel serial, std::string &motor);
-    void commandSummary();
+    void commandSummary(SerialChannel serial, Motors motors);
+    void motorPosition(SerialChannel serial, Motors motors);
     void sendCommandToChannel(SerialChannel serial, Motors motors);
     void resetSteps();
+    void flexLiftControl(long newFlexSteps, long newLiftSteps, SerialChannel serial, Motors motors);
+    void flexLiftCommand(long newFlexSteps, long newLiftSteps, SerialChannel serial, Motors motors);
+    long xsteps = 0;
+    long ysteps = 0;
+    long zsteps = 0;
 };
 class DemoMode :public Input
 {

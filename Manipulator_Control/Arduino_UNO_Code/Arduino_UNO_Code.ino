@@ -16,17 +16,17 @@ unsigned char inputel=0;
 
   //Define variables to switch pins
   int FRsw = A1; //variable for flex R switch pin
-  int FLsw = A0; //variable for flex L switch pin
-  int LRsw = A2; //variable for Lift T switch
-  int LLsw = A3; //variable for Lift B switch
+  int FLsw = A0; //variable for flex L switch pin - Use in program to reset lift
+  int LTsw = A3; //variable for Lift T switch
+  int LBsw = A2; //variable for Lift B switch - use in program to reset lift
   int TRsw = 10; //variable for Thight R switch
   int TLsw = 9; //variable for Thigh L switch
 
   //Defines Variables for state of switches - mainly for debouncing swithes
   int FRswVal = LOW; //variable to store R switch state for flex motor
   int FLswVal = LOW; //variable to store L switch state for flex motor
-  int LRswVal = LOW; //variable to store R switch state for Lift motor
-  int LLswVal = LOW; //variable to store L switch state for Lift motor
+  int LTswVal = LOW; //variable to store R switch state for Lift motor
+  int LBswVal = LOW; //variable to store L switch state for Lift motor
 
   //Defines Variables for state of steps and position
   long F_STEPS ;                //variable to store steps required to move
@@ -46,7 +46,7 @@ unsigned char inputel=0;
   int buttonState;                      // the current reading from the input pin
   int lastButtonState = HIGH;           // the previous reading from the input pin
   unsigned long lastDebounceTime = 0;   // the last time the output pin was toggled
-  unsigned long debounceDelay = 50;     // the debounce time; increase if the output flickers
+  unsigned long debounceDelay = 4000;     // the debounce time; increase if the output flickers
 
 //DEFINE A STEPPER AND THE PINS IT WILL USE
   /* COMMAND: AccelStepper flexMotor(AccelStepper::DRIVER, STEPPER1_STEP_PIN, STEPPER1_DIR_PIN);
@@ -117,7 +117,7 @@ void loop() {
                 Serial.print(data_packet);
                 L_STEPS = data; //Read steps in global variable                char data_packet[100];
                 L_SPEED = velocity;
-                liftMotor.setMaxSpeed(L_SPEED);
+                liftMotor.setMaxSpeed(velocity);
                 liftMotor.moveTo(-data);//move to data steps as specified via terminal or program
               }  
              if(motor == 'f'){
@@ -125,7 +125,7 @@ void loop() {
                 sprintf(data_packet, "# %ld %ld $", data, velocity);
                 Serial.print(data_packet);
                 F_SPEED = velocity;
-                flexMotor.setMaxSpeed(F_SPEED);
+                flexMotor.setMaxSpeed(velocity);
                 F_STEPS = data; //Read steps in global variable
                 flexMotor.moveTo(-data);//move to data steps as specified via terminal or program
               }  
@@ -142,17 +142,17 @@ void loop() {
                 Serial.print(data_packet);
                 L_STEPS = data; //Read steps in global variable                char data_packet[100];
                 L_SPEED = velocity;
-                liftMotor.setMaxSpeed(L_SPEED);
-                liftMotor.moveTo(-data);//move to data steps as specified via terminal or program
+                liftMotor.setMaxSpeed(velocity);
+                liftMotor.move(-data);//move to data steps as specified via terminal or program
               }  
              if(motor == 'F'){
                 char data_packet[100];
                 sprintf(data_packet, "# %ld %ld $", data, velocity);
                 Serial.print(data_packet);
                 F_SPEED = velocity;
-                flexMotor.setMaxSpeed(F_SPEED);
+                flexMotor.setMaxSpeed(velocity);
                 F_STEPS = data; //Read steps in global variable
-                flexMotor.moveTo(-data);//move to data steps as specified via terminal or program
+                flexMotor.move(-data);//move to data steps as specified via terminal or program
               }   
                 data = 0;
                 inputel=0;
@@ -178,13 +178,30 @@ void loop() {
   //check if limits were reached
   FRswVal = digitalRead(FRsw);
   FLswVal = digitalRead(FLsw);
-  LRswVal = digitalRead(LRsw);//top 
-  LLswVal = digitalRead(LLsw);//bottom
+  LTswVal = digitalRead(LTsw);//top 
+  LBswVal = digitalRead(LBsw);//bottom
+
+  if(FRswVal == LOW){ //A0 - Left switch of flex motor
+   Serial.println("Flex right low"); 
+   delay(3000);              
+  }  
+  if(FLswVal == LOW){ //A0 - Left switch of flex motor
+   Serial.println("Flex left low");   
+   delay(3000);                     
+  }  
+  if(LTswVal == LOW){ //A0 - Left switch of flex motor
+   Serial.println("Lift Top low"); 
+   delay(3000);                         
+  }  
+  if(LBswVal == LOW){ //A0 - Left switch of flex motor
+   Serial.println("LIft Bottom low");
+   delay(3000);                             
+  }
 
   F_StepsRemaining = flexMotor.distanceToGo();
   L_StepsRemaining = liftMotor.distanceToGo();
 
-  if(FRswVal == HIGH && FLswVal == HIGH && LRswVal == HIGH && LLswVal == HIGH) {
+  if(FRswVal == HIGH && FLswVal == HIGH && LTswVal == HIGH && LBswVal == HIGH) {
     buttonState = HIGH;
     lastDebounceTime = millis();
   }
@@ -194,6 +211,14 @@ void loop() {
         // whatever the reading is at, it's been there for longer
         // than the debounce delay, so take it as the actual current state:
         // if the button state has changed:
+         Serial.println(millis());
+         Serial.println(lastDebounceTime);
+         Serial.println((millis() - lastDebounceTime));
+         Serial.println(debounceDelay);
+         count = count + 1;  //Keep counting while switch is pressed
+            if(count == 5) {
+            count = 2; //ensure count stay at a low number - use counts to debounce switch
+          }
         buttonState = LOW;
       }
     }
@@ -202,23 +227,24 @@ void loop() {
          count = 0;
     }            
   // what to do if switch has gone LOW (CLOSED) - something has pressed the logical switch
-  if (buttonState == LOW) {
-        count = count + 1;  //Keep counting while switch is pressed
-        if(count == 5) {
-            count = 2; //ensure count stay at a low number - use counts to debounce switch
-          }
-   }
+ // if (buttonState == LOW) {
+ //       count = count + 1;  //Keep counting while switch is pressed
+  //      if(count == 5) {
+  //          count = 2; //ensure count stay at a low number - use counts to debounce switch
+  //        }
+ //  }
 //ACTION WHILE SWITCH IS PRESSED   
   if(count == 1) {  //take action if count is 1 - means switch was pressed
     F_ActualCurrentPostion = flexMotor.currentPosition();
     L_ActualCurrentPostion = liftMotor.currentPosition();
+         Serial.println("count is now 1");
 
    //Left switch   
       if(FLswVal == LOW){ //A0 - Left switch of flex motor
         flexMotor.setSpeed(0);
         flexMotor.setCurrentPosition(0); //set position to 0 once the Right switch is reached
       }
-      if(LLswVal == LOW){ //A3 - Bottom switch of lift motor
+      if(LBswVal == LOW){ //A3 - Bottom switch of lift motor
         liftMotor.setSpeed(0);
         liftMotor.setCurrentPosition(0); //set position to 0 once the Right switch is reached
       }
@@ -232,7 +258,7 @@ void loop() {
               flexMotor.move(F_StepsRemaining);//change direction when at left switch
         */
       }
-      if(LRswVal == LOW){ //A2
+      if(LTswVal == LOW){ //A2
         flexMotor.setSpeed(0);
       }
   }//end action while count = 1
