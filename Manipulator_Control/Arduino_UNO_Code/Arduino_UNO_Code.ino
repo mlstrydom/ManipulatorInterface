@@ -46,7 +46,7 @@ unsigned char inputel=0;
   int buttonState;                      // the current reading from the input pin
   int lastButtonState = HIGH;           // the previous reading from the input pin
   unsigned long lastDebounceTime = 0;   // the last time the output pin was toggled
-  unsigned long debounceDelay = 4000;     // the debounce time; increase if the output flickers
+  unsigned long debounceDelay = 600;     // the debounce time; increase if the output flickers
 
 //DEFINE A STEPPER AND THE PINS IT WILL USE
   /* COMMAND: AccelStepper flexMotor(AccelStepper::DRIVER, STEPPER1_STEP_PIN, STEPPER1_DIR_PIN);
@@ -60,7 +60,7 @@ unsigned char inputel=0;
   AccelStepper thighMotor(1, 6, 12);//PUL:Pin 6, DIR:Pin 12
 
 //COMMAND TO MOVE MOTOR
-  //  $ l 500 1200 # -> $ (start char) s (motor char) 4000 (number of steps) # (terminating char)
+  //   -> $ f -1000 12800 # (start char) s (motor char) 4000 (number of steps) # (terminating char)
   
 void setup()
 {  
@@ -86,12 +86,12 @@ void setup()
     //Setup limit switch pins as inputs and set high via pullup resistor - will work even is arduino is not working
     pinMode(A1, INPUT_PULLUP);//Setup flex limit RIGHT switch to Stop motor
     pinMode(A0, INPUT_PULLUP);//Setup flex limit LEFT switch to Stop motor
-    pinMode(A2, INPUT_PULLUP);//Setup lift limit TOP switch to Stop motor
-    pinMode(A3, INPUT_PULLUP);//Setup lift limit BOTTOM switch to Stop motor
+    pinMode(A2, INPUT);//Setup lift limit TOP switch to Stop motor
+    pinMode(A3, INPUT);//Setup lift limit BOTTOM switch to Stop motor
     
   // SET INITIAL POSITION FOR MOTORS
-    flexMotor.setCurrentPosition(19000); //set position to 0 where ever the motor start - will change that once a switch is reached
-    liftMotor.setCurrentPosition(19000); //set position to 0 where ever the motor start - will change that once a switch is reached
+    flexMotor.setCurrentPosition(-19000); //set position to 0 where ever the motor start - will change that once a switch is reached
+    liftMotor.setCurrentPosition(-19000); //set position to 0 where ever the motor start - will change that once a switch is reached
 
 } // END OF SETUP
 
@@ -104,7 +104,10 @@ void loop() {
 	unsigned char a,c,dtr, motor;
   unsigned char b=0;
 	static unsigned char prev_dtr = 0;
-  
+//                  F_ActualCurrentPostion = flexMotor.currentPosition();
+//                  L_ActualCurrentPostion = liftMotor.currentPosition();
+//                     Serial.print(F_ActualCurrentPostion);
+//                     Serial.println(L_ActualCurrentPostion);
   if (Serial.available()) { //Data arrived from host
      uartbuff[uartind] = Serial.read();
       if (uartbuff[0]=='$'||uartbuff[0]==0x42){//Detect '$' character in start byte, proceed to fill buffer with subsequent arrivals
@@ -130,12 +133,17 @@ void loop() {
                 flexMotor.moveTo(-data);//move to data steps as specified via terminal or program
               }  
               if(motor == 'p'){ //to send position to c++ interface
-                  F_ActualCurrentPostion = flexMotor.currentPosition();
-                  L_ActualCurrentPostion = liftMotor.currentPosition();
+                  F_ActualCurrentPostion = -flexMotor.currentPosition();
+                  L_ActualCurrentPostion = -liftMotor.currentPosition();
                   char data_packet[100];
                   sprintf(data_packet, "# cpos %ld %ld $", F_ActualCurrentPostion, L_ActualCurrentPostion);
                   Serial.print(data_packet);               
+              }              
+              if(motor == 'r'){ //to reset Arduino position
+               flexMotor.setCurrentPosition(0); //set position to 0 where ever the motor start - will change that once a switch is reached
+               liftMotor.setCurrentPosition(0); //set position to 0 where ever the motor start - will change that once a switch is reached
               }
+
               if(motor == 'L'){
                 char data_packet[100];
                 sprintf(data_packet, "# %ld %ld $", data, velocity);
@@ -174,12 +182,12 @@ void loop() {
       return;
 	 }//End of serial communications
 
-//MOTOR MOVEMENT AND SWITCH CONTROL
+/*//MOTOR MOVEMENT AND SWITCH CONTROL
   //check if limits were reached
   FRswVal = digitalRead(FRsw);
   FLswVal = digitalRead(FLsw);
-  LTswVal = digitalRead(LTsw);//top 
-  LBswVal = digitalRead(LBsw);//bottom
+  LTswVal = HIGH;// digitalRead(LTsw);//top 
+  LBswVal = HIGH; //digitalRead(LBsw);//bottom
 
   if(FRswVal == LOW){ //A0 - Left switch of flex motor
    Serial.println("Flex right low"); 
@@ -211,10 +219,10 @@ void loop() {
         // whatever the reading is at, it's been there for longer
         // than the debounce delay, so take it as the actual current state:
         // if the button state has changed:
-         Serial.println(millis());
-         Serial.println(lastDebounceTime);
-         Serial.println((millis() - lastDebounceTime));
-         Serial.println(debounceDelay);
+ //        Serial.println(millis());
+ //        Serial.println(lastDebounceTime);
+  //       Serial.println((millis() - lastDebounceTime));
+  //       Serial.println(debounceDelay);
          count = count + 1;  //Keep counting while switch is pressed
             if(count == 5) {
             count = 2; //ensure count stay at a low number - use counts to debounce switch
@@ -248,21 +256,22 @@ void loop() {
         liftMotor.setSpeed(0);
         liftMotor.setCurrentPosition(0); //set position to 0 once the Right switch is reached
       }
+      
    //Right switches - Stop motors   
      if(FRswVal == LOW){  //A1
        flexMotor.setSpeed(0);
-          /*  CODE TO CHANGE DIRECTION - NOT USED
-              F_StepsRemaining = -F_StepsRemaining;
-              flexMotor.setCurrentPosition(-F_StepsRemaining); //reset distance to go to 0 once a switch is reached
-              delay(100);
-              flexMotor.move(F_StepsRemaining);//change direction when at left switch
-        */
+          //  CODE TO CHANGE DIRECTION - NOT USED
+           //   F_StepsRemaining = -F_StepsRemaining;
+           //   flexMotor.setCurrentPosition(-F_StepsRemaining); //reset distance to go to 0 once a switch is reached
+          //    delay(100);
+          //    flexMotor.move(F_StepsRemaining);//change direction when at left switch
+      
       }
       if(LTswVal == LOW){ //A2
         flexMotor.setSpeed(0);
       }
   }//end action while count = 1
-  
+ */
 flexMotor.run(); //steps only one step at a time
 liftMotor.run();
 }

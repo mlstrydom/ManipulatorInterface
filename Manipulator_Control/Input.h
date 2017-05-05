@@ -105,7 +105,7 @@ public:
     std::string password;
     std::string manualPassword = "mm";
     std::string autoPassword = "am";
-    std::string demoPassword = "legUp";
+    std::string demoPassword = "dm";
     char ch;
     const char ENTER = 13;
     int countm = 0;
