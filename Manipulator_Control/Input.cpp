@@ -7,22 +7,32 @@ ManualInput::ManualInput()
 
 void ManualInput::commandSummary(SerialChannel serial, Motors motors)
 {
-    std::cout << "Summary of commands:" << std::endl;
-    std::cout << "s_motor = " <<
-                 s_steps <<
-                 " steps @" ;
-    std::cout << s_velocity <<
-                 " steps/sec" <<
-                 std::endl;
-    std::cout << "l_motor = " <<
-                 l_steps <<
-                 " steps @";
-    std::cout << l_velocity <<
-                 " steps/sec" <<
-                 std::endl;
     motorPosition(serial, motors);//reading position as lift motor do steps
-    std::cout << "------>Current Manipulator position in cmd summary (x, y, z) = " << xsteps << ", "<< ysteps << ", "<< zsteps << std::endl;
-    ready_to_move = true;
+    std::cout << "***********************************************************************************" << std::endl ;
+    std::cout << "                                                             Flex      Lift" << std::endl;
+    std::cout << "***********************************************************************************" << std::endl ;
+    std::cout << "Current Manipulator position in cmd summary (x, y, z) = " << xsteps << ",   "<< zsteps << ",   "<< ysteps << std::endl;
+    std::cout << "New steps to be send to motor control                 = " << xsteps << ",   "<< s_steps << ",   "<< l_steps << std::endl;
+    std::cout << "..................................................................................." << std::endl ;
+    std::cout << "------>MANIPULATOR POSITION AFTER NEW STEPS           = " << xsteps << ",   "<< zsteps+s_steps << ",   "<< ysteps+l_steps << std::endl;
+    std::cout << "..................................................................................." << std::endl ;
+    std::cout << "Step velocity for each axis (steps/second)            = " << xsteps << ",    "<< s_velocity << " ,    "<< l_velocity << std::endl;
+    std::cout << "***********************************************************************************" << std::endl ;
+    long step_z = zsteps+s_steps;
+    long step_y = ysteps+l_steps;
+//    if (step_z > 18000){
+ //       if ((step_z < 0) || (step_y < 0)){
+      if (step_z > 18000 || step_z < 0 || step_y > 16000 || step_y < 0){
+            ready_to_move = false;
+            std::cout << ""<< std::endl;
+            std::cout << "!!!!!!!!!!!!!!!!ERROR!!!!!!!!!!!!!!!!!!!"<< std::endl;
+            std::cout << "Steps requested is not in range!!!"<< std::endl;
+            std::cout << "Change it using arrow keys or i-mode"<< std::endl;
+ //      }
+    }
+    else {
+        ready_to_move = true;
+    }
 }
 void ManualInput::resetSteps()
 {
@@ -203,20 +213,30 @@ void ManualInput::checkOtherKeys(Motors motors, SerialChannel serial, std::strin
         case 113: // q
             std::cout << "Exiting Program" << std::endl;
             exit(0);
-        case 115: // s
+        case 114: // r
             commandSummary(serial, motors);
+            if (ready_to_move == true){
             std::cout <<"Press ENTER to continue" << std::endl;
+            }
+            else {
+            std::cout <<"Please change new position" << std::endl;
+            }
             break;
 
         case 13: // enter
+        if (ready_to_move == true){
             resetMove = FALSE;
             l_velocity = 6400;
             s_velocity = 12800;
  //           Sleep(8000);
  //           ready_to_move = true;
-            std::cout <<"s and l steps at pressing ENTER" << s_steps << l_steps << std::endl;
+ //           std::cout <<"s and l steps at pressing ENTER" << s_steps << l_steps << std::endl;
             flexLiftControl(s_steps, l_steps, serial, motors);
   //          sendCommandToChannel(serial, motors);
+        }
+        else {
+            std::cout <<"First review steps using 'r'" << std::endl;
+        }
             break;
         case 105: // i
             std::cout << "Manual input. Usage: motor steps velocity" << std::endl;
@@ -240,7 +260,8 @@ void ManualInput::checkOtherKeys(Motors motors, SerialChannel serial, std::strin
                          " steps = " << manual_steps <<
                          std::endl;
             break;
-    case 114: // r - reset arduino using manual model
+    case 122: // z - reset arduino using manual model
+        //Flagged coded when swithes are working - do not remove!
         std::cout << "ARE YOU SURE YOU WANT TO RESET THE MANIPULATOR POSITION TO ZEROy (y - to continue)"<< std::endl;
         x = _getch();
         if (x == 121){
@@ -251,9 +272,10 @@ void ManualInput::checkOtherKeys(Motors motors, SerialChannel serial, std::strin
                     resetMove = FALSE;
             //            l_velocity = 6400;
             //            s_velocity = 12800;
-                    serial.tx(motors.commandFactory("r", 0, 0));
+                    serial.tx(motors.commandFactory("z", 0, 0));
                     motorPosition(serial, motors);
-                    std::cout << "------>Asteps after reset = " << xsteps << ", "<< ysteps << ", "<< zsteps << std::endl;
+//                    std::cout << "------>Asteps after reset = " << xsteps << ", "<< ysteps << ", "<< zsteps << std::endl;
+                    std::cout << "Enter steps using arrow keys or i-mode - current position is: " << xsteps << ", "<< ysteps << ", "<< zsteps << std::endl;
             //         flexLiftControl(-19000, -19000, serial, motors);
             //            stop_auto = false;
             //            ready_to_move = false;
@@ -261,11 +283,11 @@ void ManualInput::checkOtherKeys(Motors motors, SerialChannel serial, std::strin
         }
         else {
             std::cout << "Usage: " << std::endl
-                      << "\t Use 'y' key to reset manipulator to zero position" << std::endl
+                      << "\t Use 'y' key to ZERO manipulator position" << std::endl
                       << "\t Use Left and Right arrow key for slider motor" << std::endl
                       << "\t Use Up and Down arrow key for Lift motor" << std::endl
                       << "\t Use 'i' key for manual step entry (motor (F or L) steps)" << std::endl
-                      << "\t Use 's' key for step summary" << std::endl
+                      << "\t Use 'r' key for step summary" << std::endl
                       << "\t Use 'Enter'" << std::endl;
         }
         break;
@@ -276,8 +298,8 @@ void ManualInput::checkOtherKeys(Motors motors, SerialChannel serial, std::strin
                       << "\t Use Left and Right arrow key for slider motor" << std::endl
                       << "\t Use Up and Down arrow key for Lift motor" << std::endl
                       << "\t Use 'i' key for manual step entry (motor (F or L) steps)" << std::endl
-                      << "\t Use 's' key for step summary" << std::endl
-                      << "\t Use 'r' key to reset manipulator to zero position" << std::endl
+                      << "\t Use 'r' key to reveiew step summary" << std::endl
+                      << "\t Use 'z' key to ZERO manipulator to zero position" << std::endl
                       << "\t Use 'Enter' key to send steps to motors" << std::endl
                       << std::endl;
         break;
@@ -439,8 +461,8 @@ void MainSelection::mainKeySelection(int &x, SerialChannel serial)
                           << "\t Use Left and Right arrow key for slider motor" << std::endl
                           << "\t Use Up and Down arrow key for Lift motor" << std::endl
                           << "\t Use 'i' key for manual step entry (motor (F or L) steps)" << std::endl
-                          << "\t Use 's' key for step summary" << std::endl
-                          << "\t Use 'r' key to reset manipulator to zero position" << std::endl
+                          << "\t Use 'r' key to review step summary" << std::endl
+                          << "\t Use 'z' key to reset manipulator to zero position" << std::endl
                           << "\t Use 'Enter' key to send steps to motors" << std::endl
                           << std::endl;
             }

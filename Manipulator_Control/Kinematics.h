@@ -55,7 +55,7 @@ public:
    void updateCurrentState(double x, double y, double z);
 
 private:
-   kin::state currentState = {0,0,0,0,0,0};
+   kin::state currentState = { 0, 0, 0, 0, 0, 0 };
 };
 
 class Kinematics

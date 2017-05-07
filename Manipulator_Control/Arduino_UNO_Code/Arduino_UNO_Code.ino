@@ -90,8 +90,8 @@ void setup()
     pinMode(A3, INPUT);//Setup lift limit BOTTOM switch to Stop motor
     
   // SET INITIAL POSITION FOR MOTORS
-    flexMotor.setCurrentPosition(-19000); //set position to 0 where ever the motor start - will change that once a switch is reached
-    liftMotor.setCurrentPosition(-19000); //set position to 0 where ever the motor start - will change that once a switch is reached
+    flexMotor.setCurrentPosition(-18000); //set position to 0 where ever the motor start - will change that once a switch is reached
+    liftMotor.setCurrentPosition(-16000); //set position to 0 where ever the motor start - will change that once a switch is reached
 
 } // END OF SETUP
 
@@ -139,7 +139,7 @@ void loop() {
                   sprintf(data_packet, "# cpos %ld %ld $", F_ActualCurrentPostion, L_ActualCurrentPostion);
                   Serial.print(data_packet);               
               }              
-              if(motor == 'r'){ //to reset Arduino position
+              if(motor == 'z'){ //to reset Arduino position
                flexMotor.setCurrentPosition(0); //set position to 0 where ever the motor start - will change that once a switch is reached
                liftMotor.setCurrentPosition(0); //set position to 0 where ever the motor start - will change that once a switch is reached
               }
