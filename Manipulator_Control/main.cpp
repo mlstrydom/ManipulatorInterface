@@ -9,7 +9,7 @@ int main()
     SerialChannel serial;
     MainSelection mainSelection;
 
-    serial.connect("COM3"); //Set COM port for Arduino
+    serial.connect("COM5"); //Set COM port for Arduino
 
     int menu = _getch();
     while(true){

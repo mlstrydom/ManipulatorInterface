@@ -523,8 +523,8 @@ void DemoMode::flexLiftCommand(long newFlexSteps, long newLiftSteps, SerialChann
     s_steps = newFlexSteps+flexPosition;// Use absolute position in UNO
     l_steps = newLiftSteps+liftPosition;// Use absolute position in UNO
 
-    std::cout << "--s_steps read from UNO = " << s_steps << std::endl;
-    std::cout << "--l_steps read from UNO = " << l_steps << std::endl;
+    std::cout << "--Total s_steps = " << s_steps << std::endl;
+    std::cout << "--Total l_steps = " << l_steps << std::endl;
     std::cout << "--New flex Steps to be added = " << newFlexSteps << std::endl;
     std::cout << "--New lift Steps to be added = " << newLiftSteps << std::endl;
     std::cout << "" << std::endl;
@@ -600,38 +600,65 @@ void DemoMode::moveControl(SerialChannel serial, Motors motors)
     resetMove = TRUE;
     l_velocity = 6400;
     s_velocity = 12800;
-    flexLiftControl(-19000, -19000, serial, motors);
+    serial.tx(motors.commandFactory("z", 0, 0));//Automatically reset - position must be zero already
+    motorPosition(serial, motors);
+    flexLiftControl(0, 0, serial, motors);//When switches is working -18000, -16000
     Sleep(8000);
 
-
-    std::cout << "           ---------------LIFT LEG PHASE---------------" << std::endl;
+    std::cout << "           ---------------GRID TEST---------------" << std::endl;
     resetMove = FALSE;
     l_velocity = 12800;
-    s_velocity = 1600;
-    flexLiftControl(2000, 17500, serial, motors);
-    Sleep(8000);
-
-
-    std::cout << "           ---------LOWER AND FLEX LEG PHASE-----------" << std::endl;
-    resetMove = FALSE;
-    l_velocity = 12800;
-    s_velocity = 2000;
-    flexLiftControl(1000, -16500, serial, motors);
-    Sleep(8000);
-
-
-    std::cout << "           ---------------FLEX LEG PHASE---------------" << std::endl;
-    resetMove = FALSE;
-    l_velocity = 80;
     s_velocity = 12800;
-    flexLiftControl(9000, -500, serial, motors);
-    Sleep(8000);
+    s_steps = 0;
+    long lp = 1;
+    long slideIncrement;
+    long liftIncrement;
+    while (s_steps <= 16000){
+        while (l_steps <= 14000*lp && l_steps >= 0){
+            liftIncrement = 2000*lp;
+            slideIncrement =0;
+            std::cout << "liftIncrement" << liftIncrement << "slideIncrement" << slideIncrement<< std::endl;
+            flexLiftControl(slideIncrement, liftIncrement, serial, motors);
+            Sleep(1000);
+        }
+        lp = -1;
+        liftIncrement =0;
+        slideIncrement = 2000;
+        std::cout << "l_steps" << l_steps << std::endl;
+        flexLiftControl(slideIncrement, liftIncrement, serial, motors);
+        Sleep(1000);
+//        slideProgress += 2000;
+    }
+    flexLiftControl(-18000, -16000, serial, motors);//When switches is working -18000, -16000
 
-    std::cout << "           ---------------RETURN LEG PHASE---------------" << std::endl;
-    resetMove = FALSE;
-    l_velocity = 400;
-    s_velocity = 12800;
-    flexLiftControl(-9000, 2500, serial, motors);
+//    std::cout << "           ---------------LIFT LEG PHASE---------------" << std::endl;
+//    resetMove = FALSE;
+//    l_velocity = 12800;
+//    s_velocity = 6400;
+//    flexLiftControl(2000, 17500, serial, motors);
+//    Sleep(8000);
+
+
+//    std::cout << "           ---------LOWER AND FLEX LEG PHASE-----------" << std::endl;
+//    resetMove = FALSE;
+//    l_velocity = 12800;
+//    s_velocity = 2000;
+//    flexLiftControl(1000, -16500, serial, motors);
+//    Sleep(8000);
+
+
+//    std::cout << "           ---------------FLEX LEG PHASE---------------" << std::endl;
+//    resetMove = FALSE;
+//    l_velocity = 80;
+//    s_velocity = 12800;
+//    flexLiftControl(9000, -500, serial, motors);
+//    Sleep(8000);
+
+//    std::cout << "           ---------------RETURN LEG PHASE---------------" << std::endl;
+//    resetMove = FALSE;
+//    l_velocity = 400;
+//    s_velocity = 12800;
+//    flexLiftControl(-9000, 2500, serial, motors);
 }
 void DemoMode::motorPosition(SerialChannel serial, Motors motors)
 {
@@ -644,7 +671,7 @@ void DemoMode::motorPosition(SerialChannel serial, Motors motors)
     char cposIdentify[100];
     if (found!=std::string::npos){ //no 'cpos' substring in data
         sscanf(data.c_str(),"%c %s %ld %ld %c",&a, &cposIdentify, &z_steps, &y_steps,&a);
-        xsteps = -x_steps; ysteps = -y_steps ;zsteps = -z_steps;
+        xsteps = x_steps; ysteps = y_steps ;zsteps = z_steps;
         std::cout << "------>Manipulator Postion from UNO (x-N/A, y-lift, z-flex) = " << xsteps << ", "<< ysteps << ", "<< zsteps << std::endl;
         std::cout << "                                             " << std::endl;
     }
