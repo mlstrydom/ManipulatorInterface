@@ -603,34 +603,57 @@ void DemoMode::moveControl(SerialChannel serial, Motors motors)
     serial.tx(motors.commandFactory("z", 0, 0));//Automatically reset - position must be zero already
     motorPosition(serial, motors);
     flexLiftControl(0, 0, serial, motors);//When switches is working -18000, -16000
-    Sleep(8000);
+    Sleep(4000);
 
     std::cout << "           ---------------GRID TEST---------------" << std::endl;
     resetMove = FALSE;
-    l_velocity = 12800;
+    l_velocity = 10000;
     s_velocity = 12800;
+    long zTopOfGrid = 18000;
+    long yTopOfGrid = 16000;
+    int sleepTime = 1000;
     s_steps = 0;
     long lp = 1;
-    long slideIncrement;
-    long liftIncrement;
-    while (s_steps <= 16000){
-        while (l_steps <= 14000*lp && l_steps >= 0){
-            liftIncrement = 2000*lp;
-            slideIncrement =0;
-            std::cout << "liftIncrement" << liftIncrement << "slideIncrement" << slideIncrement<< std::endl;
-            flexLiftControl(slideIncrement, liftIncrement, serial, motors);
-            Sleep(1000);
+    long slideIncrement =-2000;
+    long liftIncrement =2000;
+    long gridYsteps = 1;
+    long gridZsteps = zTopOfGrid;
+    flexLiftControl(zTopOfGrid, 0, serial, motors);
+    Sleep(sleepTime);
+    while (gridZsteps > 0){
+        while (gridYsteps <= yTopOfGrid && gridYsteps >= 0){
+            flexLiftControl(0, liftIncrement, serial, motors);
+            gridYsteps += liftIncrement;
+            Sleep(sleepTime);
         }
-        lp = -1;
-        liftIncrement =0;
-        slideIncrement = 2000;
-        std::cout << "l_steps" << l_steps << std::endl;
-        flexLiftControl(slideIncrement, liftIncrement, serial, motors);
-        Sleep(1000);
-//        slideProgress += 2000;
+        lp = -lp;
+        gridZsteps += slideIncrement;
+        flexLiftControl(slideIncrement, 0, serial, motors);
+        liftIncrement = 2000*lp;
+        gridYsteps += liftIncrement;
+        Sleep(sleepTime);
     }
-    flexLiftControl(-18000, -16000, serial, motors);//When switches is working -18000, -16000
-
+    if ( ysteps == yTopOfGrid){ //If last z move was at top (need to do down y grid)
+        std::cout << "Pass Test" << std::endl;
+        while (gridYsteps <= yTopOfGrid && gridYsteps >= 0){
+            flexLiftControl(0, liftIncrement, serial, motors);
+            gridYsteps += liftIncrement;
+            Sleep(sleepTime);
+        }
+    }
+    int zTest = zTopOfGrid/slideIncrement;
+    if ( zTest%2 == 0){ //If last z move was at bottom (need to do up y grid)
+        while (gridYsteps <= yTopOfGrid && gridYsteps >= 0){
+            flexLiftControl(0, liftIncrement, serial, motors);
+            gridYsteps += liftIncrement;
+            Sleep(sleepTime);
+        }
+        std::cout << "---------------------RESET to ZERO Position---------------------------" << std::endl;
+        flexLiftControl(0, -yTopOfGrid, serial, motors);
+    }
+    else {
+    }
+    exit(0);
 //    std::cout << "           ---------------LIFT LEG PHASE---------------" << std::endl;
 //    resetMove = FALSE;
 //    l_velocity = 12800;
